@@ -100,8 +100,12 @@
             </div>
             <div class="flex items-center gap-2">
                 <label class="text-sm font-medium text-[var(--dark-gray)]">Model:</label>
-                <input type="text" id="modelInput" value="gemma4:31b-cloud"
-                    class="w-28 px-2 py-1 text-sm rounded border border-white/40 bg-white/50 text-[var(--dark-gray)] focus:outline-none focus:ring-2 focus:ring-white/60">
+                <select id="modelSelect" onchange="handleModelChange()"
+                    class="w-40 px-2 py-1 text-sm rounded border border-white/40 bg-white/50 text-[var(--dark-gray)] focus:outline-none focus:ring-2 focus:ring-white/60">
+                    <option value="">Loading...</option>
+                </select>
+                <input type="text" id="customModelInput" placeholder="model:tag"
+                    class="hidden w-32 px-2 py-1 text-sm rounded border border-white/40 bg-white/50 text-[var(--dark-gray)] focus:outline-none focus:ring-2 focus:ring-white/60">
             </div>
         </div>
     </header>
@@ -335,6 +339,8 @@ async function deleteLesson(lessonId) {
 }
 
 // ──────────────────────────── Ollama API ────────────────────────────
+let availableModels = [];
+
 async function checkOllamaStatus() {
     const statusDot = document.getElementById('statusDot');
     const statusText = document.getElementById('statusText');
@@ -343,17 +349,79 @@ async function checkOllamaStatus() {
         if (response.ok) {
             statusDot.className = 'w-2 h-2 rounded-full bg-green-500';
             statusText.textContent = 'Connected';
+            const data = await response.json();
+            availableModels = data.models || [];
+            populateModelSelect();
         } else {
             throw new Error();
         }
     } catch {
         statusDot.className = 'w-2 h-2 rounded-full bg-red-400';
         statusText.textContent = 'Disconnected';
+        availableModels = [];
+        populateModelSelect();
     }
 }
 
+function populateModelSelect() {
+    const select = document.getElementById('modelSelect');
+    const saved = localStorage.getItem('selectedOllamaModel');
+    select.innerHTML = '';
+
+    if (availableModels.length === 0) {
+        select.innerHTML = '<option value="">No models found</option>';
+    } else {
+        availableModels.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            const size = (m.details && m.details.parameter_size) || '';
+            const quant = (m.details && m.details.quantization_level) || '';
+            const meta = [size, quant].filter(Boolean).join(' ');
+            opt.textContent = meta ? `${m.name} (${meta})` : m.name;
+            select.appendChild(opt);
+        });
+    }
+
+    const customOpt = document.createElement('option');
+    customOpt.value = '__custom__';
+    customOpt.textContent = 'Custom...';
+    select.appendChild(customOpt);
+
+    if (saved && (availableModels.some(m => m.name === saved) || saved === '__custom__')) {
+        select.value = saved;
+    } else if (availableModels.length > 0) {
+        select.value = availableModels[0].name;
+    }
+    handleModelChange();
+}
+
+function handleModelChange() {
+    const select = document.getElementById('modelSelect');
+    const customInput = document.getElementById('customModelInput');
+    const value = select.value;
+    localStorage.setItem('selectedOllamaModel', value);
+    if (value === '__custom__') {
+        customInput.classList.remove('hidden');
+        if (document.activeElement !== customInput) {
+            const savedCustom = localStorage.getItem('customOllamaModel') || '';
+            customInput.value = savedCustom;
+        }
+    } else {
+        customInput.classList.add('hidden');
+    }
+}
+
+function getSelectedModel() {
+    const select = document.getElementById('modelSelect');
+    const customInput = document.getElementById('customModelInput');
+    if (select.value === '__custom__') {
+        return customInput.value.trim() || 'llama3.2';
+    }
+    return select.value || 'llama3.2';
+}
+
 async function generateLesson(topic, subtopic) {
-    const model = document.getElementById('modelInput').value.trim() || 'llama3.2';
+    const model = getSelectedModel();
     const prompt = `You are an expert, engaging Spanish language tutor. Generate a comprehensive lesson on the following subtopic.
 
 Topic: ${topic}
@@ -828,12 +896,20 @@ async function init() {
 
         renderTopics();
         renderLessonArea();
-        checkOllamaStatus();
+        await checkOllamaStatus();
 
         // Periodic status check
         setInterval(checkOllamaStatus, 15000);
     } catch (err) {
         showToast('Failed to initialize database: ' + err.message, 'error');
+    }
+
+    // Persist custom model input
+    const customInput = document.getElementById('customModelInput');
+    if (customInput) {
+        customInput.addEventListener('input', (e) => {
+            localStorage.setItem('customOllamaModel', e.target.value);
+        });
     }
 
     // Close modal on overlay click
