@@ -1,243 +1,230 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spanish Tutor — Ollama</title>
+        <script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        'pastel-blue': '#AEC6CF',
+        'soft-blue':   '#D6EAF8',
+        'hover-blue':  '#85B8CC',
+        'deep-blue':   '#6BA3BE',
+        'light-gray':  '#F0F0F0',
+        'dark-gray':   '#4A4A4A',
+        'medium-gray': '#8A8A8A',
+        'card-bg':     '#F8FBFD',
+      },
+      animation: {
+        'fade-in':  'fadeIn 0.3s ease',
+        'pulse-dot':'pulse 1.5s ease-in-out infinite',
+        'shimmer':  'shimmer 2s ease-in-out infinite',
+      },
+      keyframes: {
+        fadeIn:  { from: { opacity:'0', transform:'translateY(6px)' }, to: { opacity:'1', transform:'translateY(0)' } },
+        pulse:   { '0%,100%': { opacity:'0.4' }, '50%': { opacity:'1' } },
+        shimmer: { '0%': { 'background-position':'200% 0' }, '100%': { 'background-position':'-200% 0' } },
+      }
+    }
+  }
+}
+</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root {
-            --pastel-blue: #AEC6CF;
-            --light-gray: #F0F0F0;
-            --dark-gray: #4A4A4A;
-            --medium-gray: #8A8A8A;
-            --soft-blue: #D6EAF8;
-            --hover-blue: #85B8CC;
-            --deep-blue: #6BA3BE;
-            --card-bg: #F8FBFD;
-        }
+  :root {
+    --pastel-blue: #AEC6CF;
+    --light-gray: #F0F0F0;
+    --dark-gray: #4A4A4A;
+    --medium-gray: #8A8A8A;
+    --soft-blue: #D6EAF8;
+    --hover-blue: #85B8CC;
+    --deep-blue: #6BA3BE;
+    --card-bg: #F8FBFD;
+  }
 
-        * { box-sizing: border-box; }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--pastel-blue); border-radius: 3px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--hover-blue); }
 
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
-        }
+  .topic-item { transition: all 0.15s ease; }
+  .topic-item:hover { background-color: var(--soft-blue); }
+  .topic-item.active { background-color: var(--pastel-blue); color: white; }
 
-        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
-        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--pastel-blue); border-radius: 3px; }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--hover-blue); }
+  .subtopic-item { transition: all 0.15s ease; }
+  .subtopic-item:hover { background-color: var(--soft-blue); }
+  .subtopic-item.active { background-color: var(--deep-blue); color: white; }
 
-        .topic-item { transition: all 0.15s ease; }
-        .topic-item:hover { background-color: var(--soft-blue); }
-        .topic-item.active { background-color: var(--pastel-blue); color: white; }
+  .lesson-content h1 { font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.5rem; color: var(--dark-gray); }
+  .lesson-content h2 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.4rem; color: var(--dark-gray); }
+  .lesson-content h3 { font-size: 1.1rem; font-weight: 600; margin: 0.8rem 0 0.3rem; color: var(--medium-gray); }
+  .lesson-content p { margin: 0.4rem 0; line-height: 1.7; }
+  .lesson-content ul, .lesson-content ol { margin: 0.4rem 0 0.4rem 1.5rem; }
+  .lesson-content li { margin: 0.2rem 0; line-height: 1.6; }
+  .lesson-content strong { font-weight: 700; color: #3A3A3A; }
+  .lesson-content em { font-style: italic; }
+  .lesson-content code { background: #e8eef4; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.9em; }
+  .lesson-content blockquote { border-left: 3px solid var(--pastel-blue); padding-left: 1rem; margin: 0.5rem 0; color: var(--medium-gray); }
 
-        .subtopic-item { transition: all 0.15s ease; }
-        .subtopic-item:hover { background-color: var(--soft-blue); }
-        .subtopic-item.active { background-color: var(--deep-blue); color: white; }
+  .btn-primary {
+    background-color: var(--pastel-blue);
+    color: var(--dark-gray);
+    transition: all 0.2s ease;
+  }
+  .btn-primary:hover { background-color: var(--hover-blue); color: white; }
+  .btn-primary:active { transform: scale(0.97); }
 
-        .lesson-content h1 { font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.5rem; color: var(--dark-gray); }
-        .lesson-content h2 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.4rem; color: var(--dark-gray); }
-        .lesson-content h3 { font-size: 1.1rem; font-weight: 600; margin: 0.8rem 0 0.3rem; color: var(--medium-gray); }
-        .lesson-content p { margin: 0.4rem 0; line-height: 1.7; }
-        .lesson-content ul, .lesson-content ol { margin: 0.4rem 0 0.4rem 1.5rem; }
-        .lesson-content li { margin: 0.2rem 0; line-height: 1.6; }
-        .lesson-content strong { font-weight: 700; color: #3A3A3A; }
-        .lesson-content em { font-style: italic; }
-        .lesson-content code { background: #e8eef4; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.9em; }
-        .lesson-content blockquote { border-left: 3px solid var(--pastel-blue); padding-left: 1rem; margin: 0.5rem 0; color: var(--medium-gray); }
+  .btn-danger {
+    background-color: #e8a0a0;
+    color: var(--dark-gray);
+    transition: all 0.2s ease;
+  }
+  .btn-danger:hover { background-color: #d47878; color: white; }
 
-        .btn-primary {
-            background-color: var(--pastel-blue);
-            color: var(--dark-gray);
-            transition: all 0.2s ease;
-        }
-        .btn-primary:hover { background-color: var(--hover-blue); color: white; }
-        .btn-primary:active { transform: scale(0.97); }
+  .fade-in { animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-        .btn-danger {
-            background-color: #e8a0a0;
-            color: var(--dark-gray);
-            transition: all 0.2s ease;
-        }
-        .btn-danger:hover { background-color: #d47878; color: white; }
+  .pulse-dot { animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-        .fade-in { animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .generating-bar {
+    background: linear-gradient(90deg, var(--soft-blue), var(--pastel-blue), var(--soft-blue));
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        .pulse-dot { animation: pulse 1.5s ease-in-out infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+  .modal-overlay {
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(2px);
+  }
 
-        .generating-bar {
-            background: linear-gradient(90deg, var(--soft-blue), var(--pastel-blue), var(--soft-blue));
-            background-size: 200% 100%;
-            animation: shimmer 2s ease-in-out infinite;
-        }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .custom-context-menu {
+    position: absolute;
+    background: white;
+    border: 1px solid var(--pastel-blue);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 200px;
+    overflow: hidden;
+    animation: fadeIn 0.1s ease;
+  }
+  .custom-context-menu-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--dark-gray);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+  }
+  .custom-context-menu-item:hover { background-color: var(--soft-blue); }
+  .custom-context-menu-item.disabled { opacity: 0.5; cursor: not-allowed; }
+  .custom-context-menu-divider { height: 1px; background: var(--light-gray); margin: 4px 0; }
 
-        .modal-overlay {
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(2px);
-        }
-    
-        /* -- Audio / Text-to-Speech -- */
-        .custom-context-menu {
-            position: absolute;
-            background: white;
-            border: 1px solid var(--pastel-blue);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            min-width: 200px;
-            overflow: hidden;
-            animation: fadeIn 0.1s ease;
-        }
-        .custom-context-menu-item {
-            padding: 10px 16px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: var(--dark-gray);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.15s;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            font-family: inherit;
-        }
-        .custom-context-menu-item:hover {
-            background-color: var(--soft-blue);
-        }
-        .custom-context-menu-item.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .custom-context-menu-divider {
-            height: 1px;
-            background: var(--light-gray);
-            margin: 4px 0;
-        }
-        .floating-play-btn {
-            position: absolute;
-            background: var(--pastel-blue);
-            color: var(--dark-gray);
-            border: none;
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-        .floating-play-btn:hover {
-            background: var(--hover-blue);
-            color: white;
-            transform: translateY(-1px);
-        }
-        .audio-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 12px;
-            background: var(--soft-blue);
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--dark-gray);
-            animation: fadeIn 0.3s ease;
-            cursor: pointer;
-        }
-        .audio-status:hover {
-            background: var(--pastel-blue);
-        }
-        .audio-wave {
-            display: flex;
-            gap: 2px;
-            align-items: center;
-            height: 12px;
-        }
-        .audio-wave span {
-            width: 2px;
-            background: var(--deep-blue);
-            border-radius: 1px;
-            animation: audioWave 1s ease-in-out infinite;
-        }
-        .audio-wave span:nth-child(1) { height: 4px; animation-delay: 0s; }
-        .audio-wave span:nth-child(2) { height: 8px; animation-delay: 0.2s; }
-        .audio-wave span:nth-child(3) { height: 6px; animation-delay: 0.4s; }
-        .audio-wave span:nth-child(4) { height: 10px; animation-delay: 0.1s; }
-        @keyframes audioWave {
-            0%, 100% { transform: scaleY(1); }
-            50% { transform: scaleY(1.6); }
-        }
+  .floating-play-btn {
+    position: absolute;
+    background: var(--pastel-blue);
+    color: var(--dark-gray);
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .floating-play-btn:hover {
+    background: var(--hover-blue);
+    color: white;
+    transform: translateY(-1px);
+  }
 
-        /* -- Voice Settings -- */
-        .settings-btn {
-            background: white/30;
-            border: none;
-            color: var(--dark-gray);
-            cursor: pointer;
-            padding: 6px 10px;
-            border-radius: 8px;
-            transition: background 0.2s;
-            font-size: 1rem;
-        }
-        .settings-btn:hover {
-            background: white/50;
-        }
-        .voice-settings-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .voice-settings-form label {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--dark-gray);
-        }
-        .voice-settings-form select {
-            padding: 0.5rem 0.75rem;
-            border-radius: 8px;
-            border: 1px solid var(--pastel-blue);
-            background: white;
-            color: var(--dark-gray);
-            font-size: 0.9rem;
-            font-family: inherit;
-            outline: none;
-            cursor: pointer;
-        }
-        .voice-settings-form select:focus {
-            border-color: var(--deep-blue);
-            box-shadow: 0 0 0 2px var(--soft-blue);
-        }
-        .voice-settings-form .hint {
-            font-size: 0.8rem;
-            color: var(--medium-gray);
-            margin-top: -0.5rem;
-        }
-    </style>
-</head>
+  .audio-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: var(--soft-blue);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--dark-gray);
+    animation: fadeIn 0.3s ease;
+    cursor: pointer;
+  }
+  .audio-status:hover { background: var(--pastel-blue); }
+
+  .audio-wave { display: flex; gap: 2px; align-items: center; height: 12px; }
+  .audio-wave span {
+    width: 2px; background: var(--deep-blue); border-radius: 1px;
+    animation: audioWave 1s ease-in-out infinite;
+  }
+  .audio-wave span:nth-child(1) { height: 4px; animation-delay: 0s; }
+  .audio-wave span:nth-child(2) { height: 8px; animation-delay: 0.2s; }
+  .audio-wave span:nth-child(3) { height: 6px; animation-delay: 0.4s; }
+  .audio-wave span:nth-child(4) { height: 10px; animation-delay: 0.1s; }
+  @keyframes audioWave { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.6); } }
+
+  .settings-btn {
+    background: rgba(255,255,255,0.3);
+    border: none;
+    color: var(--dark-gray);
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    font-size: 1rem;
+  }
+  .settings-btn:hover { background: rgba(255,255,255,0.5); }
+
+  .voice-settings-form { display: flex; flex-direction: column; gap: 1rem; }
+  .voice-settings-form label { font-size: 0.9rem; font-weight: 600; color: var(--dark-gray); }
+  .voice-settings-form select {
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--pastel-blue);
+    background: white;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+  }
+  .voice-settings-form select:focus {
+    border-color: var(--deep-blue);
+    box-shadow: 0 0 0 2px var(--soft-blue);
+  }
+  .voice-settings-form .hint { font-size: 0.8rem; color: var(--medium-gray); margin-top: -0.5rem; }
+</style>
+    </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <header class="bg-[var(--pastel-blue)] shadow-md px-6 py-3 flex items-center justify-between flex-shrink-0 z-10">
+    <header class="bg-pastel-blue shadow-md px-6 py-3 flex items-center justify-between flex-shrink-0 z-10">
         <div class="flex items-center gap-3">
-            <i class="fa-solid fa-language text-2xl text-[var(--dark-gray)]"></i>
-            <h1 class="text-xl font-bold text-[var(--dark-gray)] tracking-tight">Spanish Tutor</h1>
-            <span class="text-xs bg-white/40 text-[var(--dark-gray)] px-2 py-0.5 rounded-full font-medium">Ollama</span>
+            <i class="fa-solid fa-language text-2xl text-dark-gray"></i>
+            <h1 class="text-xl font-bold text-dark-gray tracking-tight">Spanish Tutor</h1>
+            <span class="text-xs bg-white/40 text-dark-gray px-2 py-0.5 rounded-full font-medium">Ollama</span>
         </div>
         <div class="flex items-center gap-4">
-            <div id="ollamaStatus" class="flex items-center gap-2 text-sm text-[var(--dark-gray)]">
+            <div id="ollamaStatus" class="flex items-center gap-2 text-sm text-dark-gray">
                 <span class="w-2 h-2 rounded-full bg-gray-400" id="statusDot"></span>
                 <span id="statusText">Checking...</span>
             </div>
@@ -250,13 +237,13 @@
                 <i class="fa-solid fa-stop text-xs"></i>
             </div>
             <div class="flex items-center gap-2">
-                <label class="text-sm font-medium text-[var(--dark-gray)]">Model:</label>
+                <label class="text-sm font-medium text-dark-gray">Model:</label>
                 <select id="modelSelect" onchange="handleModelChange()"
-                    class="w-40 px-2 py-1 text-sm rounded border border-white/40 bg-white/50 text-[var(--dark-gray)] focus:outline-none focus:ring-2 focus:ring-white/60">
+                    class="w-40 px-2 py-1 text-sm rounded border border-white/40 bg-white/50 text-dark-gray focus:outline-none focus:ring-2 focus:ring-white/60">
                     <option value="">Loading...</option>
                 </select>
                 <input type="text" id="customModelInput" placeholder="model:tag"
-                    class="hidden w-32 px-2 py-1 text-sm rounded border border-white/40 bg-white/50 text-[var(--dark-gray)] focus:outline-none focus:ring-2 focus:ring-white/60">
+                    class="hidden w-32 px-2 py-1 text-sm rounded border border-white/40 bg-white/50 text-dark-gray focus:outline-none focus:ring-2 focus:ring-white/60">
             </div>
         </div>
     </header>
@@ -265,18 +252,18 @@
     <div class="flex flex-1 overflow-hidden">
 
         <!-- Sidebar -->
-        <aside class="w-80 flex-shrink-0 bg-white border-r border-[var(--pastel-blue)]/30 flex flex-col shadow-sm">
+        <aside class="w-80 flex-shrink-0 bg-white border-r border-pastel-blue/30 flex flex-col shadow-sm">
             <div class="p-4 border-b border-gray-100">
                 <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-[var(--medium-gray)]">Topics</h2>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-medium-gray">Topics</h2>
                     <button onclick="showAddTopicModal()" class="btn-primary px-3 py-1 rounded-lg text-sm font-medium flex items-center gap-1">
                         <i class="fa-solid fa-plus text-xs"></i> Add Topic
                     </button>
                 </div>
                 <div class="mb-3">
-                    <label class="text-xs font-medium text-[var(--medium-gray)] mb-1 block">Study Level</label>
+                    <label class="text-xs font-medium text-medium-gray mb-1 block">Study Level</label>
                     <select id="studyLevelSelect" onchange="handleStudyLevelChange(this.value)"
-                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--pastel-blue)] bg-[var(--card-bg)] text-[var(--dark-gray)]">
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pastel-blue bg-card-bg text-dark-gray">
                         <option value="lb">Lower Beginner</option>
                         <option value="ub">Upper Beginner</option>
                         <option value="li">Lower Intermediate</option>
@@ -287,7 +274,7 @@
                 </div>
                 <input type="text" id="topicSearch" placeholder="Search topics..."
                     oninput="filterTopics(this.value)"
-                    class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--pastel-blue)] bg-[var(--card-bg)]">
+                    class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pastel-blue bg-card-bg">
             </div>
 
             <div id="topicsList" class="flex-1 overflow-y-auto scrollbar-thin p-2">
@@ -296,10 +283,10 @@
         </aside>
 
         <!-- Main Panel -->
-        <main class="flex-1 flex flex-col overflow-hidden bg-[var(--light-gray)]">
+        <main class="flex-1 flex flex-col overflow-hidden bg-light-gray">
             <!-- Breadcrumb / Context -->
             <div id="contextBar" class="px-6 py-3 bg-white border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-                <div id="breadcrumb" class="text-sm text-[var(--medium-gray)]">
+                <div id="breadcrumb" class="text-sm text-medium-gray">
                     <i class="fa-solid fa-house-chimney mr-1"></i> Select a topic and subtopic to begin
                 </div>
                 <div id="contextActions" class="flex items-center gap-2"></div>
@@ -308,32 +295,32 @@
             <!-- Lesson Area -->
             <div id="lessonArea" class="flex-1 overflow-y-auto scrollbar-thin p-6">
                 <!-- Welcome / Empty State -->
-                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center fade-in">
-                    <div class="w-24 h-24 rounded-full bg-[var(--soft-blue)] flex items-center justify-center mb-6">
-                        <i class="fa-solid fa-book-open text-4xl text-[var(--pastel-blue)]"></i>
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center animate-fade-in">
+                    <div class="w-24 h-24 rounded-full bg-soft-blue flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-book-open text-4xl text-pastel-blue"></i>
                     </div>
-                    <h2 class="text-2xl font-bold text-[var(--dark-gray)] mb-2">¡Bienvenido!</h2>
-                    <p class="text-[var(--medium-gray)] max-w-md leading-relaxed">
+                    <h2 class="text-2xl font-bold text-dark-gray mb-2">¡Bienvenido!</h2>
+                    <p class="text-medium-gray max-w-md leading-relaxed">
                         Start by adding a topic on the left, then add subtopics and generate lessons powered by your local Ollama instance.
                     </p>
-                    <div class="mt-6 flex flex-col items-start gap-2 text-sm text-[var(--medium-gray)]">
-                        <div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-[var(--pastel-blue)] text-white text-xs flex items-center justify-center font-bold">1</span> Add a topic (e.g., "Verb Tenses")</div>
-                        <div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-[var(--pastel-blue)] text-white text-xs flex items-center justify-center font-bold">2</span> Add subtopics (e.g., "Present Indicative")</div>
-                        <div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-[var(--pastel-blue)] text-white text-xs flex items-center justify-center font-bold">3</span> Generate a lesson with Ollama</div>
+                    <div class="mt-6 flex flex-col items-start gap-2 text-sm text-medium-gray">
+                        <div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-pastel-blue text-white text-xs flex items-center justify-center font-bold">1</span> Add a topic (e.g., "Verb Tenses")</div>
+                        <div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-pastel-blue text-white text-xs flex items-center justify-center font-bold">2</span> Add subtopics (e.g., "Present Indicative")</div>
+                        <div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-pastel-blue text-white text-xs flex items-center justify-center font-bold">3</span> Generate a lesson with Ollama</div>
                     </div>
                 </div>
 
                 <!-- Lesson Display (hidden initially) -->
                 <div id="lessonDisplay" class="hidden max-w-3xl mx-auto">
-                    <div id="lessonContent" class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 lesson-content fade-in"></div>
+                    <div id="lessonContent" class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 lesson-content animate-fade-in"></div>
                 </div>
 
                 <!-- Generating State -->
-                <div id="generatingState" class="hidden flex flex-col items-center justify-center h-full text-center fade-in">
+                <div id="generatingState" class="hidden flex flex-col items-center justify-center h-full text-center animate-fade-in">
                     <div class="w-16 h-1 rounded-full generating-bar mb-6"></div>
-                    <h3 class="text-lg font-semibold text-[var(--dark-gray)] mb-2">Generating lesson...</h3>
-                    <p class="text-sm text-[var(--medium-gray)]">Ollama is crafting your Spanish lesson</p>
-                    <div id="streamPreview" class="mt-4 w-full max-w-2xl text-left text-sm text-[var(--medium-gray)] bg-white rounded-xl p-6 border border-gray-100 max-h-60 overflow-y-auto scrollbar-thin whitespace-pre-wrap font-mono leading-relaxed"></div>
+                    <h3 class="text-lg font-semibold text-dark-gray mb-2">Generating lesson...</h3>
+                    <p class="text-sm text-medium-gray">Ollama is crafting your Spanish lesson</p>
+                    <div id="streamPreview" class="mt-4 w-full max-w-2xl text-left text-sm text-medium-gray bg-white rounded-xl p-6 border border-gray-100 max-h-60 overflow-y-auto scrollbar-thin whitespace-pre-wrap font-mono leading-relaxed"></div>
                 </div>
             </div>
         </main>
@@ -341,7 +328,7 @@
 
     <!-- Modal Overlay -->
     <div id="modalOverlay" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
-        <div id="modalContent" class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md fade-in">
+        <div id="modalContent" class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md animate-fade-in">
             <!-- Modal content rendered dynamically -->
         </div>
     </div>
@@ -353,7 +340,7 @@
     <!-- Custom Context Menu -->
     <div id="customContextMenu" class="custom-context-menu hidden">
         <button id="ctxPlayNative" class="custom-context-menu-item">
-            <i class="fa-solid fa-volume-high text-[var(--deep-blue)]"></i>
+            <i class="fa-solid fa-volume-high text-deep-blue"></i>
             Play in native voice
         </button>
         <button id="ctxStopAudio" class="custom-context-menu-item">
@@ -362,7 +349,7 @@
         </button>
         <div class="custom-context-menu-divider"></div>
         <button id="ctxCopy" class="custom-context-menu-item">
-            <i class="fa-solid fa-copy text-[var(--medium-gray)]"></i>
+            <i class="fa-solid fa-copy text-medium-gray"></i>
             Copy
         </button>
     </div>
@@ -374,3 +361,4 @@
 
 </body>
 </html>
+

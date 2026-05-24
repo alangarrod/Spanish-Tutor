@@ -1,4 +1,4 @@
-
+﻿
 // ──────────────────────────── State ────────────────────────────
 let db = null;
 const STUDY_LEVELS = [
@@ -405,7 +405,7 @@ function renderTopics() {
     if (filteredTopics.length === 0) {
         const levelTopics = state.topics.filter(t => t.studyLevelId === state.currentStudyLevel);
         container.innerHTML = `
-            <div class="text-center py-8 text-[var(--medium-gray)] text-sm">
+            <div class="text-center py-8 text-medium-gray text-sm">
                 <i class="fa-solid fa-folder-open text-2xl mb-2 opacity-40"></i>
                 <p>${levelTopics.length === 0 ? 'No topics for this level' : 'No matching topics'}</p>
             </div>`;
@@ -435,7 +435,7 @@ function renderTopics() {
                 ${isActive ? `
                     <div class="ml-6 mt-1 space-y-0.5">
                         ${topicSubs.length === 0 ? `
-                            <div class="text-xs text-[var(--medium-gray)] py-2 px-3 italic">No subtopics yet</div>
+                            <div class="text-xs text-medium-gray py-2 px-3 italic">No subtopics yet</div>
                         ` : topicSubs.map(sub => {
                             const subActive = state.selectedSubtopicId === sub.id;
                             const hasLesson = state.lessons.some(l => l.subtopicId === sub.id);
@@ -516,7 +516,7 @@ function renderLessonArea() {
         lessonContent.innerHTML = renderMarkdown(lesson.content);
         if (lesson.updatedAt) {
             lessonContent.innerHTML += `
-                <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-[var(--medium-gray)]">
+                <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-medium-gray">
                     <i class="fa-regular fa-clock mr-1"></i> Last updated: ${new Date(lesson.updatedAt).toLocaleString()}
                 </div>`;
         }
@@ -524,12 +524,12 @@ function renderLessonArea() {
     } else {
         emptyState.classList.remove('hidden');
         emptyState.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-full text-center fade-in">
-                <div class="w-20 h-20 rounded-full bg-[var(--soft-blue)] flex items-center justify-center mb-5">
-                    <i class="fa-solid fa-wand-magic-sparkles text-3xl text-[var(--pastel-blue)]"></i>
+            <div class="flex flex-col items-center justify-center h-full text-center animate-fade-in">
+                <div class="w-20 h-20 rounded-full bg-soft-blue flex items-center justify-center mb-5">
+                    <i class="fa-solid fa-wand-magic-sparkles text-3xl text-pastel-blue"></i>
                 </div>
-                <h3 class="text-xl font-bold text-[var(--dark-gray)] mb-2">No lesson yet</h3>
-                <p class="text-[var(--medium-gray)] max-w-sm leading-relaxed">
+                <h3 class="text-xl font-bold text-dark-gray mb-2">No lesson yet</h3>
+                <p class="text-medium-gray max-w-sm leading-relaxed">
                     Click "Generate Lesson" to have Ollama create a Spanish lesson for <strong>${escapeHtml(subtopic?.name || 'this subtopic')}</strong>.
                 </p>
             </div>`;
@@ -581,12 +581,12 @@ function hideModal() {
 
 function showAddTopicModal() {
     showModal(`
-        <h3 class="text-lg font-bold text-[var(--dark-gray)] mb-4"><i class="fa-solid fa-folder-plus mr-2 text-[var(--pastel-blue)]"></i>Add Topic</h3>
+        <h3 class="text-lg font-bold text-dark-gray mb-4"><i class="fa-solid fa-folder-plus mr-2 text-pastel-blue"></i>Add Topic</h3>
         <input type="text" id="newTopicName" placeholder="e.g., Verb Tenses, Vocabulary, Culture..."
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--pastel-blue)] mb-4 text-sm"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pastel-blue mb-4 text-sm"
             onkeydown="if(event.key==='Enter')submitAddTopic()">
         <div class="flex justify-end gap-2">
-            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--medium-gray)] hover:bg-gray-100">Cancel</button>
+            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
             <button onclick="submitAddTopic()" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Add Topic</button>
         </div>
     `);
@@ -605,13 +605,13 @@ async function submitAddTopic() {
 function showAddSubtopicModal(topicId) {
     const topic = state.topics.find(t => t.id === topicId);
     showModal(`
-        <h3 class="text-lg font-bold text-[var(--dark-gray)] mb-1"><i class="fa-solid fa-book-medical mr-2 text-[var(--pastel-blue)]"></i>Add Subtopic</h3>
-        <p class="text-sm text-[var(--medium-gray)] mb-4">Under: <strong>${escapeHtml(topic?.name || '')}</strong></p>
+        <h3 class="text-lg font-bold text-dark-gray mb-1"><i class="fa-solid fa-book-medical mr-2 text-pastel-blue"></i>Add Subtopic</h3>
+        <p class="text-sm text-medium-gray mb-4">Under: <strong>${escapeHtml(topic?.name || '')}</strong></p>
         <input type="text" id="newSubtopicName" placeholder="e.g., Present Indicative, Greetings, Food..."
-            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--pastel-blue)] mb-4 text-sm"
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pastel-blue mb-4 text-sm"
             onkeydown="if(event.key==='Enter')submitAddSubtopic('${topicId}')">
         <div class="flex justify-end gap-2">
-            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--medium-gray)] hover:bg-gray-100">Cancel</button>
+            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
             <button onclick="submitAddSubtopic('${topicId}')" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Add Subtopic</button>
         </div>
     `);
@@ -629,10 +629,10 @@ async function submitAddSubtopic(topicId) {
 
 function confirmDeleteTopic(topicId, name) {
     showModal(`
-        <h3 class="text-lg font-bold text-[var(--dark-gray)] mb-2"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Delete Topic</h3>
-        <p class="text-sm text-[var(--medium-gray)] mb-4">Delete <strong>"${escapeHtml(name)}"</strong> and all its subtopics and lessons? This cannot be undone.</p>
+        <h3 class="text-lg font-bold text-dark-gray mb-2"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Delete Topic</h3>
+        <p class="text-sm text-medium-gray mb-4">Delete <strong>"${escapeHtml(name)}"</strong> and all its subtopics and lessons? This cannot be undone.</p>
         <div class="flex justify-end gap-2">
-            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--medium-gray)] hover:bg-gray-100">Cancel</button>
+            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
             <button onclick="executeDeleteTopic('${topicId}')" class="btn-danger px-5 py-2 rounded-lg text-sm font-bold">Delete</button>
         </div>
     `);
@@ -646,10 +646,10 @@ async function executeDeleteTopic(topicId) {
 
 function confirmDeleteSubtopic(subtopicId, name) {
     showModal(`
-        <h3 class="text-lg font-bold text-[var(--dark-gray)] mb-2"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Delete Subtopic</h3>
-        <p class="text-sm text-[var(--medium-gray)] mb-4">Delete <strong>"${escapeHtml(name)}"</strong> and its lesson? This cannot be undone.</p>
+        <h3 class="text-lg font-bold text-dark-gray mb-2"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Delete Subtopic</h3>
+        <p class="text-sm text-medium-gray mb-4">Delete <strong>"${escapeHtml(name)}"</strong> and its lesson? This cannot be undone.</p>
         <div class="flex justify-end gap-2">
-            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--medium-gray)] hover:bg-gray-100">Cancel</button>
+            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
             <button onclick="executeDeleteSubtopic('${subtopicId}')" class="btn-danger px-5 py-2 rounded-lg text-sm font-bold">Delete</button>
         </div>
     `);
@@ -663,10 +663,10 @@ async function executeDeleteSubtopic(subtopicId) {
 
 function confirmDeleteLesson(lessonId) {
     showModal(`
-        <h3 class="text-lg font-bold text-[var(--dark-gray)] mb-2"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Delete Lesson</h3>
-        <p class="text-sm text-[var(--medium-gray)] mb-4">Delete this lesson? You can regenerate it anytime.</p>
+        <h3 class="text-lg font-bold text-dark-gray mb-2"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Delete Lesson</h3>
+        <p class="text-sm text-medium-gray mb-4">Delete this lesson? You can regenerate it anytime.</p>
         <div class="flex justify-end gap-2">
-            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--medium-gray)] hover:bg-gray-100">Cancel</button>
+            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
             <button onclick="executeDeleteLesson('${lessonId}')" class="btn-danger px-5 py-2 rounded-lg text-sm font-bold">Delete</button>
         </div>
     `);
@@ -686,10 +686,10 @@ function requestGenerateLesson() {
     const existing = state.lessons.find(l => l.subtopicId === state.selectedSubtopicId);
     if (existing) {
         showModal(`
-            <h3 class="text-lg font-bold text-[var(--dark-gray)] mb-2"><i class="fa-solid fa-wand-magic-sparkles mr-2 text-[var(--pastel-blue)]"></i>Regenerate Lesson</h3>
-            <p class="text-sm text-[var(--medium-gray)] mb-4">This will replace the existing lesson for <strong>"${escapeHtml(subtopic.name)}"</strong>. Continue?</p>
+            <h3 class="text-lg font-bold text-dark-gray mb-2"><i class="fa-solid fa-wand-magic-sparkles mr-2 text-pastel-blue"></i>Regenerate Lesson</h3>
+            <p class="text-sm text-medium-gray mb-4">This will replace the existing lesson for <strong>"${escapeHtml(subtopic.name)}"</strong>. Continue?</p>
             <div class="flex justify-end gap-2">
-                <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--medium-gray)] hover:bg-gray-100">Cancel</button>
+                <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
                 <button onclick="startGeneration()" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Regenerate</button>
             </div>
         `);
@@ -711,7 +711,7 @@ function showToast(message, type = 'info') {
     const colors = {
         success: 'bg-green-100 border-green-300 text-green-800',
         error: 'bg-red-100 border-red-300 text-red-800',
-        info: 'bg-[var(--soft-blue)] border-[var(--pastel-blue)] text-[var(--dark-gray)]'
+        info: 'bg-soft-blue border-pastel-blue text-dark-gray'
     };
     const icons = {
         success: 'fa-check-circle',
@@ -719,7 +719,7 @@ function showToast(message, type = 'info') {
         info: 'fa-info-circle'
     };
     const toast = document.createElement('div');
-    toast.className = `px-4 py-3 rounded-xl border shadow-lg text-sm font-medium flex items-center gap-2 fade-in ${colors[type] || colors.info}`;
+    toast.className = `px-4 py-3 rounded-xl border shadow-lg text-sm font-medium flex items-center gap-2 animate-fade-in ${colors[type] || colors.info}`;
     toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> ${escapeHtml(message)}`;
     container.appendChild(toast);
     setTimeout(() => {
@@ -762,7 +762,7 @@ function openVoiceSettings() {
     optionsHtml = `<option value="" ${autoSelected}>Auto (best Spanish voice)</option>` + optionsHtml;
 
     showModal(`
-        <h3 class="text-lg font-bold text-[var(--dark-gray)] mb-2"><i class="fa-solid fa-gear mr-2 text-[var(--pastel-blue)]"></i>Voice Settings</h3>
+        <h3 class="text-lg font-bold text-dark-gray mb-2"><i class="fa-solid fa-gear mr-2 text-pastel-blue"></i>Voice Settings</h3>
         <div class="voice-settings-form">
             <label for="voiceSelect">Preferred Spanish Voice</label>
             <select id="voiceSelect" onchange="handleVoiceChange()">
@@ -771,7 +771,7 @@ function openVoiceSettings() {
             <p class="hint">Choose the voice you prefer for native playback. Changes apply immediately.</p>
             <div class="flex justify-end gap-2 mt-2">
                 <button onclick="testVoice()" class="btn-primary px-4 py-2 rounded-lg text-sm font-bold">Test Voice</button>
-                <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-[var(--medium-gray)] hover:bg-gray-100">Close</button>
+                <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Close</button>
             </div>
         </div>
     `);
