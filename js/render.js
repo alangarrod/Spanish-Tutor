@@ -1,0 +1,169 @@
+// ──────────────────────────── Rendering ────────────────────────────
+function renderTopics() {
+    const container = document.getElementById('topicsList');
+    const filter = state.searchFilter.toLowerCase();
+    const filteredTopics = state.topics.filter(t =>
+        t.name.toLowerCase().includes(filter) &&
+        t.studyLevelId === state.currentStudyLevel
+    );
+
+    if (filteredTopics.length === 0) {
+        const levelTopics = state.topics.filter(t => t.studyLevelId === state.currentStudyLevel);
+        container.innerHTML = `
+            <div class="text-center py-8 text-medium-gray text-sm">
+                <i class="fa-solid fa-folder-open text-2xl mb-2 opacity-40"></i>
+                <p>${levelTopics.length === 0 ? 'No topics for this level' : 'No matching topics'}</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = filteredTopics.map(topic => {
+        const topicSubs = state.subtopics.filter(s => s.topicId === topic.id);
+        const isActive = state.selectedTopicId === topic.id;
+        return `
+            <div class="mb-1">
+                <div class="topic-item flex items-center rounded-lg px-3 py-2 cursor-pointer group ${isActive ? 'active' : ''}"
+                     onclick="selectTopic('${topic.id}')">
+                    <i class="fa-solid fa-chevron-right text-xs mr-2 transition-transform duration-200 ${isActive ? 'rotate-90' : ''}"></i>
+                    <span class="flex-1 font-medium text-sm truncate">${escapeHtml(topic.name)}</span>
+                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="event.stopPropagation(); showAddSubtopicModal('${topic.id}')"
+                                class="w-6 h-6 rounded flex items-center justify-center hover:bg-white/30 text-xs" title="Add subtopic">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); confirmDeleteTopic('${topic.id}', '${escapeAttr(topic.name)}')"
+                                class="w-6 h-6 rounded flex items-center justify-center hover:bg-red-400/30 text-xs" title="Delete topic">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                ${isActive ? `
+                    <div class="ml-6 mt-1 space-y-0.5">
+                        ${topicSubs.length === 0 ? `
+                            <div class="text-xs text-medium-gray py-2 px-3 italic">No subtopics yet</div>
+                        ` : topicSubs.map(sub => {
+                            const subActive = state.selectedSubtopicId === sub.id;
+                            const hasLesson = state.lessons.some(l => l.subtopicId === sub.id);
+                            return `
+                                <div class="subtopic-item flex items-center rounded-lg px-3 py-2 cursor-pointer group ${subActive ? 'active' : ''}"
+                                     onclick="selectSubtopic('${sub.id}')">
+                                    <i class="fa-solid fa-book text-xs mr-2 ${hasLesson ? 'text-green-400' : ''}"></i>
+                                    <span class="flex-1 text-sm truncate">${escapeHtml(sub.name)}</span>
+                                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onclick="event.stopPropagation(); confirmDeleteSubtopic('${sub.id}', '${escapeAttr(sub.name)}')"
+                                                class="w-5 h-5 rounded flex items-center justify-center hover:bg-red-400/30" style="font-size:10px" title="Delete">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>`;
+                        }).join('')}
+                    </div>
+                ` : ''}
+            </div>`;
+    }).join('');
+}
+
+function renderLessonArea() {
+    const emptyState = document.getElementById('emptyState');
+    const lessonDisplay = document.getElementById('lessonDisplay');
+    const generatingState = document.getElementById('generatingState');
+    const contextBar = document.getElementById('contextActions');
+    const breadcrumb = document.getElementById('breadcrumb');
+
+    // Hide all
+    emptyState.classList.add('hidden');
+    lessonDisplay.classList.add('hidden');
+    generatingState.classList.add('hidden');
+
+    if (state.isGenerating) {
+        generatingState.classList.remove('hidden');
+        breadcrumb.innerHTML = `
+            <i class="fa-solid fa-spinner fa-spin mr-1"></i>
+            Generating lesson...`;
+        contextBar.innerHTML = '';
+        return;
+    }
+
+    if (!state.selectedSubtopicId) {
+        emptyState.classList.remove('hidden');
+        if (state.selectedTopicId) {
+            const topic = state.topics.find(t => t.id === state.selectedTopicId);
+            breadcrumb.innerHTML = `<i class="fa-solid fa-folder mr-1"></i> ${escapeHtml(topic?.name || '')}`;
+        } else {
+            breadcrumb.innerHTML = `<i class="fa-solid fa-house-chimney mr-1"></i> Select a topic and subtopic to begin`;
+        }
+        contextBar.innerHTML = '';
+        return;
+    }
+
+    const topic = state.topics.find(t => t.id === state.selectedTopicId);
+    const subtopic = state.subtopics.find(s => s.id === state.selectedSubtopicId);
+    const lesson = state.lessons.find(l => l.subtopicId === state.selectedSubtopicId);
+
+    breadcrumb.innerHTML = `
+        <i class="fa-solid fa-folder mr-1"></i> ${escapeHtml(topic?.name || '')}
+        <i class="fa-solid fa-chevron-right mx-2 text-xs opacity-40"></i>
+        <i class="fa-solid fa-book mr-1"></i> ${escapeHtml(subtopic?.name || '')}`;
+
+    contextBar.innerHTML = `
+        <button onclick="requestGenerateLesson()" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> ${lesson ? 'Regenerate Lesson' : 'Generate Lesson'}
+        </button>
+        ${lesson ? `
+            <button onclick="confirmDeleteLesson('${lesson.id}')" class="btn-danger px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                <i class="fa-solid fa-trash"></i> Delete
+            </button>
+        ` : ''}
+    `;
+
+    if (lesson) {
+        const lessonContent = document.getElementById('lessonContent');
+        lessonContent.innerHTML = renderMarkdown(lesson.content);
+        if (lesson.updatedAt) {
+            lessonContent.innerHTML += `
+                <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-medium-gray">
+                    <i class="fa-regular fa-clock mr-1"></i> Last updated: ${new Date(lesson.updatedAt).toLocaleString()}
+                </div>`;
+        }
+        lessonDisplay.classList.remove('hidden');
+    } else {
+        emptyState.classList.remove('hidden');
+        emptyState.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full text-center animate-fade-in">
+                <div class="w-20 h-20 rounded-full bg-soft-blue flex items-center justify-center mb-5">
+                    <i class="fa-solid fa-wand-magic-sparkles text-3xl text-pastel-blue"></i>
+                </div>
+                <h3 class="text-xl font-bold text-dark-gray mb-2">No lesson yet</h3>
+                <p class="text-medium-gray max-w-sm leading-relaxed">
+                    Click "Generate Lesson" to have Ollama create a Spanish lesson for <strong>${escapeHtml(subtopic?.name || 'this subtopic')}</strong>.
+                </p>
+            </div>`;
+    }
+}
+
+function filterTopics(value) {
+    state.searchFilter = value;
+    renderTopics();
+}
+
+function handleStudyLevelChange(levelId) {
+    state.currentStudyLevel = levelId;
+    localStorage.setItem('CurrentLevel', levelId);
+    state.selectedTopicId = null;
+    state.selectedSubtopicId = null;
+    renderTopics();
+    renderLessonArea();
+}
+
+function selectTopic(topicId) {
+    state.selectedTopicId = state.selectedTopicId === topicId ? null : topicId;
+    if (state.selectedTopicId !== topicId) state.selectedSubtopicId = null;
+    renderTopics();
+    renderLessonArea();
+}
+
+function selectSubtopic(subtopicId) {
+    state.selectedSubtopicId = subtopicId;
+    renderTopics();
+    renderLessonArea();
+}
