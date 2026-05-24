@@ -273,6 +273,18 @@
                         <i class="fa-solid fa-plus text-xs"></i> Add Topic
                     </button>
                 </div>
+                <div class="mb-3">
+                    <label class="text-xs font-medium text-[var(--medium-gray)] mb-1 block">Study Level</label>
+                    <select id="studyLevelSelect" onchange="handleStudyLevelChange(this.value)"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--pastel-blue)] bg-[var(--card-bg)] text-[var(--dark-gray)]">
+                        <option value="lb">Lower Beginner</option>
+                        <option value="ub">Upper Beginner</option>
+                        <option value="li">Lower Intermediate</option>
+                        <option value="ui">Upper Intermediate</option>
+                        <option value="la">Lower Advanced</option>
+                        <option value="ua">Upper Advanced</option>
+                    </select>
+                </div>
                 <input type="text" id="topicSearch" placeholder="Search topics..."
                     oninput="filterTopics(this.value)"
                     class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[var(--pastel-blue)] bg-[var(--card-bg)]">
@@ -340,6 +352,15 @@
 <script>
 // ──────────────────────────── State ────────────────────────────
 let db = null;
+const STUDY_LEVELS = [
+    { id: 'lb', name: 'Lower Beginner' },
+    { id: 'ub', name: 'Upper Beginner' },
+    { id: 'li', name: 'Lower Intermediate' },
+    { id: 'ui', name: 'Upper Intermediate' },
+    { id: 'la', name: 'Lower Advanced' },
+    { id: 'ua', name: 'Upper Advanced' }
+];
+
 let state = {
     topics: [],
     subtopics: [],
@@ -347,17 +368,23 @@ let state = {
     selectedTopicId: null,
     selectedSubtopicId: null,
     isGenerating: false,
-    searchFilter: ''
+    searchFilter: '',
+    currentStudyLevel: localStorage.getItem('CurrentLevel') || 'lb'
 };
 
 // ──────────────────────────── IndexedDB ────────────────────────────
 function openDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('SpanishTutorDB', 2);
+        const request = indexedDB.open('SpanishTutorDB', 3);
         request.onupgradeneeded = (e) => {
             const database = e.target.result;
             if (!database.objectStoreNames.contains('topics')) {
                 database.createObjectStore('topics', { keyPath: 'id' });
+            } else {
+                const topicStore = e.target.transaction.objectStore('topics');
+                if (!topicStore.indexNames.contains('studyLevelId')) {
+                    topicStore.createIndex('studyLevelId', 'studyLevelId', { unique: false });
+                }
             }
             if (!database.objectStoreNames.contains('subtopics')) {
                 const subStore = database.createObjectStore('subtopics', { keyPath: 'id' });
@@ -367,10 +394,26 @@ function openDB() {
                 const lessonStore = database.createObjectStore('lessons', { keyPath: 'id' });
                 lessonStore.createIndex('subtopicId', 'subtopicId', { unique: false });
             }
+            if (!database.objectStoreNames.contains('studyLevels')) {
+                database.createObjectStore('studyLevels', { keyPath: 'id' });
+            }
         };
-        request.onsuccess = (e) => { db = e.target.result; resolve(db); };
+        request.onsuccess = async (e) => {
+            db = e.target.result;
+            await initStudyLevels();
+            resolve(db);
+        };
         request.onerror = (e) => reject(e.target.error);
     });
+}
+
+async function initStudyLevels() {
+    const existing = await dbGetAll('studyLevels');
+    if (existing.length === 0) {
+        for (const level of STUDY_LEVELS) {
+            await dbPut('studyLevels', { ...level });
+        }
+    }
 }
 
 function dbGetAll(storeName) {
@@ -416,7 +459,7 @@ function dbGetByIndex(storeName, indexName, value) {
 
 // ──────────────────────────── Data Operations ────────────────────────────
 async function addTopic(name) {
-    const topic = { id: 't_' + Date.now(), name: name.trim(), createdAt: Date.now() };
+    const topic = { id: 't_' + Date.now(), name: name.trim(), studyLevelId: state.currentStudyLevel, createdAt: Date.now() };
     await dbPut('topics', topic);
     state.topics.push(topic);
     renderTopics();
@@ -573,10 +616,12 @@ function getSelectedModel() {
 
 async function generateLesson(topic, subtopic) {
     const model = getSelectedModel();
-    const prompt = `You are an expert, engaging Spanish language tutor. Generate a comprehensive lesson on the following subtopic.
+    const levelName = STUDY_LEVELS.find(l => l.id === state.currentStudyLevel)?.name || 'Lower Beginner';
+    const prompt = `You are an expert, engaging Spanish language tutor. Generate a comprehensive lesson on the following subtopic, tailored for a ${levelName} student.
 
 Topic: ${topic}
 Subtopic: ${subtopic}
+Study Level: ${levelName}
 
 Your lesson MUST include ALL of the following sections, clearly marked with markdown headers:
 
@@ -703,13 +748,17 @@ function renderMarkdown(text) {
 function renderTopics() {
     const container = document.getElementById('topicsList');
     const filter = state.searchFilter.toLowerCase();
-    const filteredTopics = state.topics.filter(t => t.name.toLowerCase().includes(filter));
+    const filteredTopics = state.topics.filter(t =>
+        t.name.toLowerCase().includes(filter) &&
+        t.studyLevelId === state.currentStudyLevel
+    );
 
     if (filteredTopics.length === 0) {
+        const levelTopics = state.topics.filter(t => t.studyLevelId === state.currentStudyLevel);
         container.innerHTML = `
             <div class="text-center py-8 text-[var(--medium-gray)] text-sm">
                 <i class="fa-solid fa-folder-open text-2xl mb-2 opacity-40"></i>
-                <p>${state.topics.length === 0 ? 'No topics yet' : 'No matching topics'}</p>
+                <p>${levelTopics.length === 0 ? 'No topics for this level' : 'No matching topics'}</p>
             </div>`;
         return;
     }
@@ -841,6 +890,15 @@ function renderLessonArea() {
 function filterTopics(value) {
     state.searchFilter = value;
     renderTopics();
+}
+
+function handleStudyLevelChange(levelId) {
+    state.currentStudyLevel = levelId;
+    localStorage.setItem('CurrentLevel', levelId);
+    state.selectedTopicId = null;
+    state.selectedSubtopicId = null;
+    renderTopics();
+    renderLessonArea();
 }
 
 function selectTopic(topicId) {
@@ -1314,6 +1372,9 @@ async function init() {
         renderTopics();
         renderLessonArea();
         await checkOllamaStatus();
+
+        const levelSelect = document.getElementById('studyLevelSelect');
+        if (levelSelect) levelSelect.value = state.currentStudyLevel;
 
         // Periodic status check
         setInterval(checkOllamaStatus, 15000);
