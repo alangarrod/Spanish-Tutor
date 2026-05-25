@@ -12,6 +12,7 @@ A beautiful, single-page web application for learning Spanish, powered by your l
 | Feature | Description |
 |---------|-------------|
 | 🤖 **AI Lesson Generation** | Creates structured lessons via local Ollama LLMs (streaming response support) |
+| 💡 **AI Topic Suggestions** | Ask Ollama for topic ideas tailored to your current study level — pick and add the ones you like |
 | 🗂️ **Topic Hierarchy** | Organise content as Topics → Subtopics → Lessons |
 | 🎯 **6 Study Levels** | Lower Beginner → Upper Beginner → Lower Intermediate → Upper Intermediate → Lower Advanced → Upper Advanced |
 | 🔊 **Native Speech** | Right-click any Spanish text to hear it spoken in a native accent |
@@ -107,7 +108,9 @@ flowchart TD
     Start(["👤 User Opens App"]) --> Init["⚙️ Initialise DB & State"]
     Init --> Render["🖼️ Render Topic Sidebar"]
     Render --> SelectLevel["📚 Select Study Level"]
-    SelectLevel --> AddTopic["➕ Add Topic"]
+    SelectLevel --> SuggestTopic["💡 Suggest Topics (AI)"]
+    SuggestTopic --> AddTopic["➕ Add Topic"]
+    SelectLevel --> AddTopic
     AddTopic --> AddSubtopic["➕ Add Subtopic"]
     AddSubtopic --> Generate["✨ Generate Lesson"]
     Generate --> Streaming["📡 Stream Response from Ollama"]
@@ -169,7 +172,8 @@ graph LR
 
 3. **Start learning!**
    - Select your study level from the dropdown
-   - Add topics and subtopics in the sidebar
+   - Add topics manually, or click **Suggest Topics** in the Add Topic modal to get AI-generated ideas
+   - Add subtopics in the sidebar
    - Click **Generate Lesson** and watch Ollama craft your personalised Spanish content
 
 ---
