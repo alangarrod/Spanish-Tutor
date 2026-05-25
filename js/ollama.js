@@ -203,3 +203,33 @@ ${existingList}Requirements:
     if (data.error) throw new Error(data.error);
     return data.response || '';
 }
+
+async function generateSubtopicSuggestions(topicName, existingSubtopics) {
+    const model = getSelectedModel();
+    const existingList = existingSubtopics.length > 0
+        ? `Existing subtopics for this topic:\n${existingSubtopics.map(s => `- ${s}`).join('\n')}\n`
+        : '';
+
+    const prompt = `You are an expert Spanish language tutor. Suggest exactly 5 subtopic ideas for the topic "${topicName}".
+
+${existingList}Requirements:
+- Each subtopic should be 1 to 5 words long.
+- Subtopics should be diverse and relevant to learning "${topicName}" in Spanish.
+- Do NOT repeat any subtopic from the existing list above.
+- Return ONLY a numbered list (1. to 5.) with no extra commentary.`;
+
+    const response = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, prompt, stream: false })
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Ollama error: ${response.status} - ${errText}`);
+    }
+
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    return data.response || '';
+}
