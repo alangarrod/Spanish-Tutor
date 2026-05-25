@@ -173,3 +173,33 @@ Write explanations in English with Spanish examples. Be thorough but concise. Us
         renderLessonArea();
     }
 }
+
+async function generateTopicSuggestions(levelName, existingTopics) {
+    const model = getSelectedModel();
+    const existingList = existingTopics.length > 0
+        ? `Existing topics for this level:\n${existingTopics.map(t => `- ${t}`).join('\n')}\n`
+        : '';
+
+    const prompt = `You are an expert Spanish language tutor. Suggest exactly 5 topic ideas for a ${levelName} Spanish student.
+
+${existingList}Requirements:
+- Each topic should be 1 to 4 words long.
+- Topics should be diverse and relevant to Spanish language learning at the ${levelName} level.
+- Do NOT repeat any topic from the existing list above.
+- Return ONLY a numbered list (1. to 5.) with no extra commentary.`;
+
+    const response = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, prompt, stream: false })
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Ollama error: ${response.status} - ${errText}`);
+    }
+
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    return data.response || '';
+}
