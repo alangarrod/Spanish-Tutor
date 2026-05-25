@@ -50,9 +50,14 @@ function showAddSubtopicModal(topicId) {
         <input type="text" id="newSubtopicName" placeholder="e.g., Present Indicative, Greetings, Food..."
             class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pastel-blue mb-4 text-sm"
             onkeydown="if(event.key==='Enter')submitAddSubtopic('${topicId}')">
-        <div class="flex justify-end gap-2">
-            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
-            <button onclick="submitAddSubtopic('${topicId}')" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Add Subtopic</button>
+        <div class="flex justify-between items-center gap-2">
+            <button onclick="fetchSubtopicSuggestions('${topicId}')" id="suggestSubtopicBtn" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles text-pastel-blue"></i> Suggest Subtopics
+            </button>
+            <div class="flex gap-2">
+                <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
+                <button onclick="submitAddSubtopic('${topicId}')" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Add Subtopic</button>
+            </div>
         </div>
     `);
 }
@@ -248,4 +253,96 @@ async function submitSuggestedTopics() {
         selectTopic(addedTopics[0].id);
         showToast(`${addedTopics.length} topic(s) added!`, 'success');
     }
+}
+
+async function fetchSubtopicSuggestions(topicId) {
+    const input = document.getElementById('newSubtopicName');
+    const currentInput = input ? input.value : '';
+
+    const suggestBtn = document.getElementById('suggestSubtopicBtn');
+    if (suggestBtn) {
+        suggestBtn.disabled = true;
+        suggestBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-pastel-blue"></i> Loading...';
+    }
+
+    const topic = state.topics.find(t => t.id === topicId);
+    const topicName = topic ? topic.name : '';
+    const existingSubtopics = state.subtopics
+        .filter(s => s.topicId === topicId)
+        .map(s => s.name);
+
+    try {
+        const response = await generateSubtopicSuggestions(topicName, existingSubtopics);
+        const suggestions = parseSuggestions(response);
+        if (suggestions.length === 0) {
+            showToast('No suggestions received. Try again.', 'error');
+            if (suggestBtn) {
+                suggestBtn.disabled = false;
+                suggestBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-pastel-blue"></i> Suggest Subtopics';
+            }
+            return;
+        }
+        renderSubtopicSuggestionPhase(suggestions, topicId, currentInput);
+    } catch (err) {
+        showToast(`Error: ${err.message}`, 'error');
+        if (suggestBtn) {
+            suggestBtn.disabled = false;
+            suggestBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-pastel-blue"></i> Suggest Subtopics';
+        }
+    }
+}
+
+function renderSubtopicSuggestionPhase(suggestions, topicId, currentInput = '') {
+    const topic = state.topics.find(t => t.id === topicId);
+    const topicName = topic ? topic.name : '';
+    const suggestionsHtml = suggestions.map((s, i) => `
+        <label class="suggestion-item">
+            <input type="checkbox" id="subtopicSuggestion_${i}" value="${escapeAttr(s)}" class="suggestion-checkbox">
+            <span class="text-sm text-dark-gray">${escapeHtml(s)}</span>
+        </label>
+    `).join('');
+
+    showModal(`
+        <h3 class="text-lg font-bold text-dark-gray mb-1"><i class="fa-solid fa-book-medical mr-2 text-pastel-blue"></i>Add Subtopic</h3>
+        <p class="text-sm text-medium-gray mb-3">Suggested subtopics for <strong>${escapeHtml(topicName)}</strong></p>
+
+        <input type="text" id="newSubtopicName" placeholder="Or type your own subtopic..."
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pastel-blue mb-3 text-sm"
+            value="${escapeAttr(currentInput)}"
+            onkeydown="if(event.key==='Enter')submitSuggestedSubtopics('${topicId}')">
+
+        <div class="suggestion-list mb-4">
+            ${suggestionsHtml}
+        </div>
+
+        <div class="flex justify-end gap-2">
+            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
+            <button onclick="submitSuggestedSubtopics('${topicId}')" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Add Selected</button>
+        </div>
+    `);
+}
+
+async function submitSuggestedSubtopics(topicId) {
+    const input = document.getElementById('newSubtopicName');
+    const inputName = input ? input.value.trim() : '';
+
+    const checkboxes = document.querySelectorAll('#modalContent input[type="checkbox"]:checked');
+    const selectedNames = Array.from(checkboxes).map(cb => cb.value.trim()).filter(v => v);
+
+    if (!inputName && selectedNames.length === 0) {
+        if (input) input.classList.add('ring-2', 'ring-red-300');
+        showToast('Please select at least one suggestion or enter a subtopic name.', 'error');
+        return;
+    }
+
+    const namesToAdd = [...selectedNames];
+    if (inputName) namesToAdd.push(inputName);
+
+    for (const name of namesToAdd) {
+        await addSubtopic(topicId, name);
+    }
+
+    hideModal();
+    renderLessonArea();
+    showToast(`${namesToAdd.length} subtopic(s) added!`, 'success');
 }
