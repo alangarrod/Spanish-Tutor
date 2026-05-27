@@ -5,10 +5,12 @@ async function init() {
         state.topics = await dbGetAll('topics');
         state.subtopics = await dbGetAll('subtopics');
         state.lessons = await dbGetAll('lessons');
+        state.stories = await dbGetAll('stories');
 
         // Sort by creation time
         state.topics.sort((a, b) => a.createdAt - b.createdAt);
         state.subtopics.sort((a, b) => a.createdAt - b.createdAt);
+        state.stories.sort((a, b) => a.createdAt - b.createdAt);
 
         renderTopics();
         renderLessonArea();

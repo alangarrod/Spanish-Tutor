@@ -72,3 +72,33 @@ async function deleteLesson(lessonId) {
     state.lessons = state.lessons.filter(l => l.id !== lessonId);
     renderLessonArea();
 }
+
+// ──────────────── Story Operations ────────────────
+
+async function addStory(title) {
+    const story = { id: 'st_' + Date.now(), studyLevelId: state.currentStudyLevel, title: title.trim(), content: null, createdAt: Date.now(), updatedAt: null };
+    await dbPut('stories', story);
+    state.stories.push(story);
+    renderTopics();
+    renderLessonArea();
+    return story;
+}
+
+async function deleteStory(storyId) {
+    await dbDelete('stories', storyId);
+    state.stories = state.stories.filter(s => s.id !== storyId);
+    if (state.selectedStoryId === storyId) {
+        state.selectedStoryId = null;
+    }
+    renderTopics();
+    renderLessonArea();
+}
+
+async function saveStory(storyId, content) {
+    const story = state.stories.find(s => s.id === storyId);
+    if (!story) return null;
+    story.content = content;
+    story.updatedAt = Date.now();
+    await dbPut('stories', story);
+    return story;
+}
