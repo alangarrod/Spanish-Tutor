@@ -239,30 +239,16 @@ ${existingList}Requirements:
 async function generateStory(storyTitle) {
     const model = getSelectedModel();
     const levelName = STUDY_LEVELS.find(l => l.id === state.currentStudyLevel)?.name || 'Lower Beginner';
-    const prompt = `Eres un experto escritor de historias para estudiantes de español. Genera una historia completa en español para un estudiante de nivel ${levelName}.
+    const prompt = `Eres un experto escritor de historias para estudiantes de español. Genera una historia en español para un estudiante de nivel ${levelName}.
 
 Título de la historia: "${storyTitle}"
 Nivel de estudio: ${levelName}
 
-Tu historia DEBE incluir TODAS las siguientes secciones, claramente marcadas con encabezados markdown:
+Escribe una historia de 400-500 palabras enteramente en español, apropiada para un estudiante de nivel ${levelName}. Usa vocabulario y gramática adecuados al nivel. La historia debe ser coherente, interesante y tener un principio, desarrollo y desenlace claros.
 
-## La Historia
-Escribe una historia corta y entretenida (150-250 palabras) enteramente en español, apropiada para un estudiante de nivel ${levelName}. Usa vocabulario y gramática adecuados al nivel. La historia debe ser coherente, interesante y tener un principio, desarrollo y desenlace claros.
+Escribe SOLAMENTE la historia en texto plano. No incluyas secciones adicionales, vocabulario, preguntas, ejercicios ni notas. No uses encabezados markdown ni formato especial — solo la narrativa.
 
-## Vocabulario Clave
-Lista 8-12 palabras o frases esenciales de la historia. Formato: **palabra en español** — definición breve en español
-
-## Preguntas de Comprensión
-Crea 5 preguntas de comprensión sobre la historia. Formato:
-- **Pregunta en español**
-
-## Ejercicios de Práctica
-Crea 4 ejercicios de práctica (completar espacios o traducir frases) relacionados con el vocabulario y la gramática de la historia.
-
-## Nota Cultural
-Comparte un dato cultural breve e interesante relacionado con el tema de la historia, escrito en español.
-
-IMPORTANTE: Escribe TODO el contenido enteramente en español. No uses inglés en ninguna sección. Usa formato markdown claro.`;
+IMPORTANTE: Escribe TODO el contenido enteramente en español. No uses inglés.`;
 
     state.isGenerating = true;
     renderLessonArea();
