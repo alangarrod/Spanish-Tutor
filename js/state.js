@@ -13,9 +13,12 @@ let state = {
     topics: [],
     subtopics: [],
     lessons: [],
+    stories: [],
     selectedTopicId: null,
     selectedSubtopicId: null,
+    selectedStoryId: null,
     isGenerating: false,
     searchFilter: '',
+    storiesExpanded: false,
     currentStudyLevel: localStorage.getItem('CurrentLevel') || 'lb'
 };

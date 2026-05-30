@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spanish Tutor — Ollama</title>
-        <script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
 tailwind.config = {
   theme: {
     extend: {
@@ -32,9 +33,8 @@ tailwind.config = {
   }
 }
 </script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <link rel="stylesheet" href="spanish-tutor.css">
+    <link rel="stylesheet" href="spanish-tutor.css">
     
     </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -124,12 +124,13 @@ tailwind.config = {
                     </div>
                     <h2 class="text-2xl font-bold text-dark-gray mb-2">¡Bienvenido!</h2>
                     <p class="text-medium-gray max-w-md leading-relaxed">
-                        Start by adding a topic on the left, then add subtopics and generate lessons powered by your local Ollama instance.
+                        Start by adding a topic on the left, then add subtopics and generate lessons. Or explore Stories for Spanish reading practice — all powered by your local Ollama instance.
                     </p>
                     <div class="mt-6 flex flex-col items-start gap-2 text-sm text-medium-gray">
                         <div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-pastel-blue text-white text-xs flex items-center justify-center font-bold">1</span> Add a topic (e.g., "Verb Tenses")</div>
                         <div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-pastel-blue text-white text-xs flex items-center justify-center font-bold">2</span> Add subtopics (e.g., "Present Indicative")</div>
                         <div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-pastel-blue text-white text-xs flex items-center justify-center font-bold">3</span> Generate a lesson with Ollama</div>
+                        <div class="flex items-center gap-2 mt-1"><span class="w-6 h-6 rounded-full bg-deep-blue text-white text-xs flex items-center justify-center font-bold"><i class="fa-solid fa-feather" style="font-size:10px"></i></span> Or add a Story for Spanish reading practice</div>
                     </div>
                 </div>
 
@@ -141,8 +142,8 @@ tailwind.config = {
                 <!-- Generating State -->
                 <div id="generatingState" class="hidden flex flex-col items-center justify-center h-full text-center animate-fade-in">
                     <div class="w-16 h-1 rounded-full generating-bar mb-6"></div>
-                    <h3 class="text-lg font-semibold text-dark-gray mb-2">Generating lesson...</h3>
-                    <p class="text-sm text-medium-gray">Ollama is crafting your Spanish lesson</p>
+                    <h3 class="text-lg font-semibold text-dark-gray mb-2">Generating content...</h3>
+                    <p class="text-sm text-medium-gray">Ollama is crafting your Spanish content</p>
                     <div id="streamPreview" class="mt-4 w-full max-w-2xl text-left text-sm text-medium-gray bg-white rounded-xl p-6 border border-gray-100 max-h-60 overflow-y-auto scrollbar-thin whitespace-pre-wrap font-mono leading-relaxed"></div>
                 </div>
             </div>

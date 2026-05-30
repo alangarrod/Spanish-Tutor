@@ -22,6 +22,10 @@
   .subtopic-item:hover { background-color: var(--soft-blue); }
   .subtopic-item.active { background-color: var(--deep-blue); color: white; }
 
+  .story-item { transition: all 0.15s ease; }
+  .story-item:hover { background-color: var(--soft-blue); }
+  .story-item.active { background-color: var(--deep-blue); color: white; }
+
   .lesson-content h1 { font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.5rem; color: var(--dark-gray); }
   .lesson-content h2 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.4rem; color: var(--dark-gray); }
   .lesson-content h3 { font-size: 1.1rem; font-weight: 600; margin: 0.8rem 0 0.3rem; color: var(--medium-gray); }

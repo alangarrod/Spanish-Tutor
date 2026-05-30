@@ -164,7 +164,7 @@ Write explanations in English with Spanish examples. Be thorough but concise. Us
             }
         }
 
-        const lesson = await saveLesson(state.selectedSubtopicId, fullContent);
+        const lesson = await saveLesson(state.selectedSubtopicId, fullContent, model);
         showToast('Lesson generated and saved!', 'success');
     } catch (err) {
         showToast(`Error: ${err.message}`, 'error');
@@ -216,6 +216,106 @@ ${existingList}Requirements:
 - Each subtopic should be 1 to 5 words long.
 - Subtopics should be diverse and relevant to learning "${topicName}" in Spanish.
 - Do NOT repeat any subtopic from the existing list above.
+- Return ONLY a numbered list (1. to 5.) with no extra commentary.`;
+
+    const response = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, prompt, stream: false })
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Ollama error: ${response.status} - ${errText}`);
+    }
+
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    return data.response || '';
+}
+
+// ──────────────── Story Generation ────────────────
+
+async function generateStory(storyTitle) {
+    const model = getSelectedModel();
+    const levelName = STUDY_LEVELS.find(l => l.id === state.currentStudyLevel)?.name || 'Lower Beginner';
+    const prompt = `Eres un experto escritor de historias para estudiantes de español. Genera una historia en español para un estudiante de nivel ${levelName}.
+
+Título de la historia: "${storyTitle}"
+Nivel de estudio: ${levelName}
+
+Escribe una historia de 400-500 palabras enteramente en español, apropiada para un estudiante de nivel ${levelName}. Usa vocabulario y gramática adecuados al nivel. La historia debe ser coherente, interesante y tener un principio, desarrollo y desenlace claros.
+
+Escribe SOLAMENTE la historia en texto plano. No incluyas secciones adicionales, vocabulario, preguntas, ejercicios ni notas. No uses encabezados markdown ni formato especial — solo la narrativa.
+
+IMPORTANTE: Escribe TODO el contenido enteramente en español. No uses inglés.`;
+
+    state.isGenerating = true;
+    renderLessonArea();
+
+    let fullContent = '';
+
+    try {
+        const response = await fetch('http://localhost:11434/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model, prompt, stream: true })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error(`Ollama error: ${response.status} - ${errText}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        const streamPreview = document.getElementById('streamPreview');
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n').filter(l => l.trim());
+            for (const line of lines) {
+                try {
+                    const json = JSON.parse(line);
+                    if (json.response) {
+                        fullContent += json.response;
+                        if (streamPreview) {
+                            streamPreview.textContent = fullContent.slice(-500);
+                            streamPreview.scrollTop = streamPreview.scrollHeight;
+                        }
+                    }
+                    if (json.error) throw new Error(json.error);
+                } catch (parseErr) {
+                    // skip malformed lines
+                }
+            }
+        }
+
+        await saveStory(state.selectedStoryId, fullContent, model);
+        showToast('Story generated and saved!', 'success');
+    } catch (err) {
+        showToast(`Error: ${err.message}`, 'error');
+    } finally {
+        state.isGenerating = false;
+        renderLessonArea();
+    }
+}
+
+async function generateStoryTitleSuggestions(levelName, existingTitles) {
+    const model = getSelectedModel();
+    const existingList = existingTitles.length > 0
+        ? `Existing story titles for this level:\n${existingTitles.map(t => `- ${t}`).join('\n')}\n`
+        : '';
+
+    const prompt = `You are an expert Spanish language tutor and storyteller. Suggest exactly 5 Spanish story title ideas for a ${levelName} Spanish student.
+
+${existingList}Requirements:
+- Each title should be a short, catchy Spanish phrase (2-6 words).
+- Titles should suggest engaging stories that help practice Spanish at the ${levelName} level.
+- Do NOT repeat any title from the existing list above.
+- Titles should be entirely in Spanish.
 - Return ONLY a numbered list (1. to 5.) with no extra commentary.`;
 
     const response = await fetch('http://localhost:11434/api/generate', {

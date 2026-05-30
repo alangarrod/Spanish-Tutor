@@ -1,7 +1,7 @@
 // ──────────────────────────── IndexedDB ────────────────────────────
 function openDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('SpanishTutorDB', 3);
+        const request = indexedDB.open('SpanishTutorDB', 4);
         request.onupgradeneeded = (e) => {
             const database = e.target.result;
             if (!database.objectStoreNames.contains('topics')) {
@@ -22,6 +22,10 @@ function openDB() {
             }
             if (!database.objectStoreNames.contains('studyLevels')) {
                 database.createObjectStore('studyLevels', { keyPath: 'id' });
+            }
+            if (!database.objectStoreNames.contains('stories')) {
+                const storyStore = database.createObjectStore('stories', { keyPath: 'id' });
+                storyStore.createIndex('studyLevelId', 'studyLevelId', { unique: false });
             }
         };
         request.onsuccess = async (e) => {

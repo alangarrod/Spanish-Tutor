@@ -346,3 +346,172 @@ async function submitSuggestedSubtopics(topicId) {
     renderLessonArea();
     showToast(`${namesToAdd.length} subtopic(s) added!`, 'success');
 }
+
+// ──────────────── Story Modals ────────────────
+
+function showAddStoryModal() {
+    const levelName = STUDY_LEVELS.find(l => l.id === state.currentStudyLevel)?.name || 'Lower Beginner';
+    showModal(`
+        <h3 class="text-lg font-bold text-dark-gray mb-1"><i class="fa-solid fa-feather mr-2 text-pastel-blue"></i>Add Story</h3>
+        <p class="text-sm text-medium-gray mb-4">For: <strong>${escapeHtml(levelName)}</strong></p>
+        <input type="text" id="newStoryTitle" placeholder="e.g., El Viaje Inesperado, Una Carta a Mi Abuela..."
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pastel-blue mb-4 text-sm"
+            onkeydown="if(event.key==='Enter')submitAddStory()">
+        <div class="flex justify-between items-center gap-2">
+            <button onclick="fetchStoryTitleSuggestions()" id="suggestStoryBtn" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles text-pastel-blue"></i> Suggest Story Titles
+            </button>
+            <div class="flex gap-2">
+                <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
+                <button onclick="submitAddStory()" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Add Story</button>
+            </div>
+        </div>
+    `);
+}
+
+async function submitAddStory() {
+    const input = document.getElementById('newStoryTitle');
+    const title = input.value.trim();
+    if (!title) { input.classList.add('ring-2', 'ring-red-300'); return; }
+    const story = await addStory(title);
+    hideModal();
+    selectStory(story.id);
+    showToast(`Story "${title}" added!`, 'success');
+}
+
+async function fetchStoryTitleSuggestions() {
+    const input = document.getElementById('newStoryTitle');
+    const currentInput = input ? input.value : '';
+
+    const suggestBtn = document.getElementById('suggestStoryBtn');
+    if (suggestBtn) {
+        suggestBtn.disabled = true;
+        suggestBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-pastel-blue"></i> Loading...';
+    }
+
+    const levelName = STUDY_LEVELS.find(l => l.id === state.currentStudyLevel)?.name || 'Lower Beginner';
+    const existingTitles = state.stories
+        .filter(s => s.studyLevelId === state.currentStudyLevel)
+        .map(s => s.title);
+
+    try {
+        const response = await generateStoryTitleSuggestions(levelName, existingTitles);
+        const suggestions = parseSuggestions(response);
+        if (suggestions.length === 0) {
+            showToast('No suggestions received. Try again.', 'error');
+            if (suggestBtn) {
+                suggestBtn.disabled = false;
+                suggestBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-pastel-blue"></i> Suggest Story Titles';
+            }
+            return;
+        }
+        renderStoryTitleSuggestionPhase(suggestions, currentInput);
+    } catch (err) {
+        showToast(`Error: ${err.message}`, 'error');
+        if (suggestBtn) {
+            suggestBtn.disabled = false;
+            suggestBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-pastel-blue"></i> Suggest Story Titles';
+        }
+    }
+}
+
+function renderStoryTitleSuggestionPhase(suggestions, currentInput = '') {
+    const levelName = STUDY_LEVELS.find(l => l.id === state.currentStudyLevel)?.name || 'Lower Beginner';
+    const suggestionsHtml = suggestions.map((s, i) => `
+        <label class="suggestion-item">
+            <input type="checkbox" id="storySuggestion_${i}" value="${escapeAttr(s)}" class="suggestion-checkbox">
+            <span class="text-sm text-dark-gray">${escapeHtml(s)}</span>
+        </label>
+    `).join('');
+
+    showModal(`
+        <h3 class="text-lg font-bold text-dark-gray mb-1"><i class="fa-solid fa-feather mr-2 text-pastel-blue"></i>Add Story</h3>
+        <p class="text-sm text-medium-gray mb-3">Suggested story titles for <strong>${escapeHtml(levelName)}</strong></p>
+
+        <input type="text" id="newStoryTitle" placeholder="Or type your own story title..."
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pastel-blue mb-3 text-sm"
+            value="${escapeAttr(currentInput)}"
+            onkeydown="if(event.key==='Enter')submitSuggestedStoryTitles()">
+
+        <div class="suggestion-list mb-4">
+            ${suggestionsHtml}
+        </div>
+
+        <div class="flex justify-end gap-2">
+            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
+            <button onclick="submitSuggestedStoryTitles()" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Add Selected</button>
+        </div>
+    `);
+}
+
+async function submitSuggestedStoryTitles() {
+    const input = document.getElementById('newStoryTitle');
+    const inputTitle = input ? input.value.trim() : '';
+
+    const checkboxes = document.querySelectorAll('#modalContent input[type="checkbox"]:checked');
+    const selectedTitles = Array.from(checkboxes).map(cb => cb.value.trim()).filter(v => v);
+
+    if (!inputTitle && selectedTitles.length === 0) {
+        if (input) input.classList.add('ring-2', 'ring-red-300');
+        showToast('Please select at least one suggestion or enter a story title.', 'error');
+        return;
+    }
+
+    const titlesToAdd = [...selectedTitles];
+    if (inputTitle) titlesToAdd.push(inputTitle);
+
+    const addedStories = [];
+    for (const title of titlesToAdd) {
+        const story = await addStory(title);
+        addedStories.push(story);
+    }
+
+    hideModal();
+
+    if (addedStories.length > 0) {
+        selectStory(addedStories[0].id);
+        showToast(`${addedStories.length} story(ies) added!`, 'success');
+    }
+}
+
+function confirmDeleteStory(storyId, title) {
+    showModal(`
+        <h3 class="text-lg font-bold text-dark-gray mb-2"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Delete Story</h3>
+        <p class="text-sm text-medium-gray mb-4">Delete <strong>"${escapeHtml(title)}"</strong>? This cannot be undone.</p>
+        <div class="flex justify-end gap-2">
+            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
+            <button onclick="executeDeleteStory('${storyId}')" class="btn-danger px-5 py-2 rounded-lg text-sm font-bold">Delete</button>
+        </div>
+    `);
+}
+
+async function executeDeleteStory(storyId) {
+    await deleteStory(storyId);
+    hideModal();
+    showToast('Story deleted', 'info');
+}
+
+function requestGenerateStory() {
+    const story = state.stories.find(s => s.id === state.selectedStoryId);
+    if (!story) return;
+
+    if (story.content) {
+        showModal(`
+            <h3 class="text-lg font-bold text-dark-gray mb-2"><i class="fa-solid fa-wand-magic-sparkles mr-2 text-pastel-blue"></i>Regenerate Story</h3>
+            <p class="text-sm text-medium-gray mb-4">This will replace the existing story for <strong>"${escapeHtml(story.title)}"</strong>. Continue?</p>
+            <div class="flex justify-end gap-2">
+                <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
+                <button onclick="startStoryGeneration()" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Regenerate</button>
+            </div>
+        `);
+    } else {
+        startStoryGeneration();
+    }
+}
+
+async function startStoryGeneration() {
+    hideModal();
+    const story = state.stories.find(s => s.id === state.selectedStoryId);
+    if (!story) return;
+    await generateStory(story.title);
+}
