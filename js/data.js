@@ -51,16 +51,17 @@ async function deleteSubtopic(subtopicId) {
     renderLessonArea();
 }
 
-async function saveLesson(subtopicId, content) {
+async function saveLesson(subtopicId, content, modelName) {
     const existing = state.lessons.find(l => l.subtopicId === subtopicId);
     let lesson;
     if (existing) {
         existing.content = content;
         existing.updatedAt = Date.now();
+        existing.modelName = modelName || existing.modelName || null;
         await dbPut('lessons', existing);
         lesson = existing;
     } else {
-        lesson = { id: 'l_' + Date.now(), subtopicId, content, createdAt: Date.now(), updatedAt: Date.now() };
+        lesson = { id: 'l_' + Date.now(), subtopicId, content, createdAt: Date.now(), updatedAt: Date.now(), modelName: modelName || null };
         await dbPut('lessons', lesson);
         state.lessons.push(lesson);
     }
@@ -94,11 +95,12 @@ async function deleteStory(storyId) {
     renderLessonArea();
 }
 
-async function saveStory(storyId, content) {
+async function saveStory(storyId, content, modelName) {
     const story = state.stories.find(s => s.id === storyId);
     if (!story) return null;
     story.content = content;
     story.updatedAt = Date.now();
+    story.modelName = modelName || story.modelName || null;
     await dbPut('stories', story);
     return story;
 }

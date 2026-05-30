@@ -159,7 +159,7 @@ function renderLessonArea() {
                 if (story.updatedAt) {
                     lessonContent.innerHTML += `
                         <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-medium-gray">
-                            <i class="fa-regular fa-clock mr-1"></i> Last updated: ${new Date(story.updatedAt).toLocaleString()}
+                            <i class="fa-regular fa-clock mr-1"></i> Last updated: ${new Date(story.updatedAt).toLocaleString()}${story.modelName ? ` <span class="mx-1">·</span> <i class="fa-solid fa-microchip mr-1"></i>${escapeHtml(story.modelName)}` : ''}
                         </div>`;
                 }
                 lessonDisplay.classList.remove('hidden');
@@ -218,7 +218,7 @@ function renderLessonArea() {
         if (lesson.updatedAt) {
             lessonContent.innerHTML += `
                 <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-medium-gray">
-                    <i class="fa-regular fa-clock mr-1"></i> Last updated: ${new Date(lesson.updatedAt).toLocaleString()}
+                    <i class="fa-regular fa-clock mr-1"></i> Last updated: ${new Date(lesson.updatedAt).toLocaleString()}${lesson.modelName ? ` <span class="mx-1">·</span> <i class="fa-solid fa-microchip mr-1"></i>${escapeHtml(lesson.modelName)}` : ''}
                 </div>`;
         }
         lessonDisplay.classList.remove('hidden');

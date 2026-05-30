@@ -164,7 +164,7 @@ Write explanations in English with Spanish examples. Be thorough but concise. Us
             }
         }
 
-        const lesson = await saveLesson(state.selectedSubtopicId, fullContent);
+        const lesson = await saveLesson(state.selectedSubtopicId, fullContent, model);
         showToast('Lesson generated and saved!', 'success');
     } catch (err) {
         showToast(`Error: ${err.message}`, 'error');
@@ -293,7 +293,7 @@ IMPORTANTE: Escribe TODO el contenido enteramente en español. No uses inglés.`
             }
         }
 
-        await saveStory(state.selectedStoryId, fullContent);
+        await saveStory(state.selectedStoryId, fullContent, model);
         showToast('Story generated and saved!', 'success');
     } catch (err) {
         showToast(`Error: ${err.message}`, 'error');
