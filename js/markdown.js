@@ -14,8 +14,8 @@ function renderMarkdown(text) {
         .replace(/`(.+?)`/g, '<code>$1</code>')
         // Blockquote
         .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
-        // Unordered list items
-        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        // Unordered list items (handle optional leading spaces and common bullet chars)
+        .replace(/^[ \t]*[-*•][ \t]+(.+)$/gm, '<li>$1</li>')
         // Numbered list items
         .replace(/^\d+\.\s(.+)$/gm, '<li>$1</li>')
         // Horizontal rule
@@ -47,7 +47,7 @@ function renderMarkdown(text) {
     html = html.split('\n').map(line => {
         const trimmed = line.trim();
         if (!trimmed) return '';
-        if (/^<(h[1-6]|ul|li|ol|blockquote|hr|div|p|table|thead|tbody|tr|th|td)/.test(trimmed)) return line;
+        if (/^<\/?(?:h[1-6]|ul|li|ol|blockquote|hr|div|p|table|thead|tbody|tr|th|td)/.test(trimmed)) return line;
         return `<p>${line}</p>`;
     }).join('\n');
 
