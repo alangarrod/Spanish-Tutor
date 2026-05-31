@@ -83,7 +83,7 @@ function getSelectedModel() {
 async function generateLesson(topic, subtopic) {
     const model = getSelectedModel();
     const levelName = STUDY_LEVELS.find(l => l.id === state.currentStudyLevel)?.name || 'Lower Beginner';
-    const prompt = `You are an expert, engaging Spanish language tutor. Generate a comprehensive lesson on the following subtopic, tailored for a ${levelName} student.
+    const prompt = `You are an expert, engaging Spanish language tutor. Generate a thorough instructional lesson on the following subtopic, tailored for a ${levelName} student.
 
 Topic: ${topic}
 Subtopic: ${subtopic}
@@ -92,37 +92,25 @@ Study Level: ${levelName}
 Your lesson MUST include ALL of the following sections, clearly marked with markdown headers:
 
 ## Introduction
-Brief overview of what this lesson covers and why it's important for Spanish learners.
+A clear overview of what this lesson covers, why it matters for Spanish learners, and how it fits into broader language use.
 
 ## Key Vocabulary
-List 8-12 essential Spanish words/phrases related to this subtopic. Format each as: **Spanish word** — English translation
+List 15-20 essential Spanish words/phrases related to this subtopic. Format each as: **Spanish word** — English translation
 
 ## Grammar & Rules
-Explain the grammatical concepts clearly with examples in bold Spanish and English translations in parentheses.
+Explain the grammatical concepts thoroughly. Cover any important rules, exceptions, and variations. Include multiple examples in bold Spanish with English translations in parentheses.
 
 ## Example Sentences
-Provide 6-8 example sentences demonstrating the concept. Format each as:
+Provide 10-12 example sentences demonstrating the concept across a range of contexts. Format each as:
 - **Spanish sentence** (English translation)
 
-## Practice Exercises
-Create 5 fill-in-the-blank or translation exercises for the student to practice.
-
-## Mini Quiz
-Create a 4-question multiple choice quiz. Format as:
-**Q#:** Question text
-- A) Option
-- B) Option  
-- C) Option
-- D) Option
-**Answer:** X
-
-## Cultural Note
-Share a brief interesting cultural fact related to this topic.
-
-Write explanations in English with Spanish examples. Be thorough but concise. Use clear formatting.`;
+Write all explanations in English with Spanish examples. Be thorough and instructive. Use clear formatting.`;
 
     state.isGenerating = true;
     renderLessonArea();
+
+    const streamPreviewEl = document.getElementById('streamPreview');
+    if (streamPreviewEl) streamPreviewEl.textContent = '';
 
     let fullContent = '';
 
@@ -252,6 +240,9 @@ IMPORTANTE: Escribe TODO el contenido enteramente en español. No uses inglés.`
 
     state.isGenerating = true;
     renderLessonArea();
+
+    const streamPreviewEl = document.getElementById('streamPreview');
+    if (streamPreviewEl) streamPreviewEl.textContent = '';
 
     let fullContent = '';
 
