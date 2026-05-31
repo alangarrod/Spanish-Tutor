@@ -324,3 +324,52 @@ ${existingList}Requirements:
     if (data.error) throw new Error(data.error);
     return data.response || '';
 }
+
+// ──────────────── Quiz Generation ────────────────
+
+async function generateQuiz(lessonContent) {
+    const model = getSelectedModel();
+    const levelName = STUDY_LEVELS.find(l => l.id === state.currentStudyLevel)?.name || 'Lower Beginner';
+
+    const prompt = `You are an expert Spanish language tutor. Based on the following lesson, generate exactly 5 multiple-choice quiz questions to test the student's understanding.
+
+Study Level: ${levelName}
+
+LESSON CONTENT:
+${lessonContent}
+
+Return ONLY valid JSON in this exact format, with no additional text before or after:
+{
+  "questions": [
+    {
+      "question": "Question text here",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": 0,
+      "explanation": "Brief explanation of why this answer is correct"
+    }
+  ]
+}
+
+Rules:
+- Generate exactly 5 questions
+- Each question must have exactly 4 options
+- "correct" is the 0-based index of the correct option
+- Mix question types: vocabulary translation, fill-in-the-blank, and grammar rule questions
+- Base all questions strictly on content from the lesson above
+- Return ONLY the JSON object, no markdown fences, no other text`;
+
+    const response = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, prompt, stream: false })
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Ollama error: ${response.status} - ${errText}`);
+    }
+
+    const data = await response.json();
+    if (data.error) throw new Error(data.error);
+    return data.response || '';
+}

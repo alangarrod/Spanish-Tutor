@@ -515,3 +515,146 @@ async function startStoryGeneration() {
     if (!story) return;
     await generateStory(story.title);
 }
+
+// ──────────────── Quiz Modal ────────────────
+
+let _quizQuestions = null;
+
+async function showQuizModal() {
+    const lesson = state.lessons.find(l => l.subtopicId === state.selectedSubtopicId);
+    const subtopic = state.subtopics.find(s => s.id === state.selectedSubtopicId);
+    if (!lesson) return;
+
+    showModal(`
+        <div class="flex flex-col items-center justify-center py-10">
+            <i class="fa-solid fa-spinner fa-spin text-3xl text-pastel-blue mb-4"></i>
+            <p class="text-dark-gray font-medium">Generating quiz...</p>
+            <p class="text-sm text-medium-gray mt-1">This may take a moment</p>
+        </div>
+    `);
+
+    try {
+        const raw = await generateQuiz(lesson.content);
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error('Model did not return valid JSON. Try again.');
+        const quizData = JSON.parse(jsonMatch[0]);
+        if (!quizData.questions || !Array.isArray(quizData.questions) || quizData.questions.length === 0) {
+            throw new Error('No questions returned. Try again.');
+        }
+        _renderQuizQuestions(quizData.questions, subtopic?.name || 'Lesson');
+    } catch (err) {
+        document.getElementById('modalContent').innerHTML = `
+            <div class="text-center py-6">
+                <i class="fa-solid fa-circle-exclamation text-3xl text-red-400 mb-3"></i>
+                <p class="text-dark-gray font-medium mb-1">Failed to generate quiz</p>
+                <p class="text-sm text-medium-gray mb-5">${escapeHtml(err.message)}</p>
+                <button onclick="hideModal()" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Close</button>
+            </div>
+        `;
+    }
+}
+
+function _renderQuizQuestions(questions, subtopicName) {
+    _quizQuestions = questions;
+
+    const questionsHtml = questions.map((q, qi) => `
+        <div class="mb-5">
+            <p class="text-sm font-semibold text-dark-gray mb-2">${qi + 1}. ${escapeHtml(q.question)}</p>
+            <div class="space-y-1.5">
+                ${q.options.map((opt, oi) => `
+                    <label class="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-gray-200 cursor-pointer hover:bg-soft-blue transition-colors text-sm">
+                        <input type="radio" name="q${qi}" value="${oi}" class="accent-pastel-blue flex-shrink-0">
+                        ${escapeHtml(opt)}
+                    </label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('modalContent').innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-dark-gray">
+                <i class="fa-solid fa-circle-question mr-2 text-pastel-blue"></i>Quiz: ${escapeHtml(subtopicName)}
+            </h3>
+            <span class="text-xs text-medium-gray">${questions.length} questions</span>
+        </div>
+        <div class="max-h-[60vh] overflow-y-auto pr-1" id="quizQuestionsContainer">
+            ${questionsHtml}
+        </div>
+        <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+            <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">Cancel</button>
+            <button onclick="submitQuiz()" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">
+                <i class="fa-solid fa-check mr-1.5"></i>Submit Answers
+            </button>
+        </div>
+    `;
+}
+
+function submitQuiz() {
+    const questions = _quizQuestions;
+    if (!questions) return;
+
+    let score = 0;
+
+    const resultsHtml = questions.map((q, qi) => {
+        const selected = document.querySelector(`input[name="q${qi}"]:checked`);
+        const userAnswer = selected ? parseInt(selected.value, 10) : -1;
+        const isCorrect = userAnswer === q.correct;
+        if (isCorrect) score++;
+
+        const optionsHtml = q.options.map((opt, oi) => {
+            let cls = 'border-gray-200 text-dark-gray bg-white';
+            let icon = '';
+            if (oi === q.correct) {
+                cls = 'border-green-400 bg-green-50 text-green-800 font-medium';
+                icon = '<i class="fa-solid fa-check text-green-500 ml-auto flex-shrink-0"></i>';
+            } else if (oi === userAnswer) {
+                cls = 'border-red-300 bg-red-50 text-red-700';
+                icon = '<i class="fa-solid fa-xmark text-red-400 ml-auto flex-shrink-0"></i>';
+            }
+            return `
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg border ${cls} text-sm">
+                    <span class="flex-1">${escapeHtml(opt)}</span>${icon}
+                </div>`;
+        }).join('');
+
+        return `
+            <div class="mb-5">
+                <div class="flex items-start gap-2 mb-2">
+                    <i class="fa-solid ${isCorrect ? 'fa-circle-check text-green-500' : 'fa-circle-xmark text-red-400'} mt-0.5 flex-shrink-0"></i>
+                    <p class="text-sm font-semibold text-dark-gray">${qi + 1}. ${escapeHtml(q.question)}</p>
+                </div>
+                <div class="space-y-1.5 ml-5">
+                    ${optionsHtml}
+                    ${q.explanation ? `
+                        <p class="text-xs text-medium-gray mt-2 italic">
+                            <i class="fa-solid fa-lightbulb mr-1 text-amber-400"></i>${escapeHtml(q.explanation)}
+                        </p>` : ''}
+                </div>
+            </div>`;
+    }).join('');
+
+    const pct = Math.round((score / questions.length) * 100);
+    const scoreColor = pct >= 80 ? 'text-green-600' : pct >= 60 ? 'text-amber-500' : 'text-red-500';
+    const scoreMsg = pct >= 80 ? '¡Excelente!' : pct >= 60 ? '¡Bien hecho!' : '¡Sigue estudiando!';
+
+    _quizQuestions = null;
+
+    document.getElementById('modalContent').innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-dark-gray">
+                <i class="fa-solid fa-trophy mr-2 text-pastel-blue"></i>Quiz Results
+            </h3>
+            <div class="text-right">
+                <div class="text-2xl font-bold ${scoreColor}">${score}/${questions.length}</div>
+                <div class="text-xs font-medium ${scoreColor}">${scoreMsg}</div>
+            </div>
+        </div>
+        <div class="max-h-[60vh] overflow-y-auto pr-1">
+            ${resultsHtml}
+        </div>
+        <div class="flex justify-end mt-4 pt-4 border-t border-gray-100">
+            <button onclick="hideModal()" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Done</button>
+        </div>
+    `;
+}
