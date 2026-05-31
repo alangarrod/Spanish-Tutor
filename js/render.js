@@ -206,6 +206,9 @@ function renderLessonArea() {
             <i class="fa-solid fa-wand-magic-sparkles"></i> ${lesson ? 'Regenerate Lesson' : 'Generate Lesson'}
         </button>
         ${lesson ? `
+            <button onclick="showQuizModal()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                <i class="fa-solid fa-circle-question"></i> Quiz Me
+            </button>
             <button onclick="confirmDeleteLesson('${lesson.id}')" class="btn-danger px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
                 <i class="fa-solid fa-trash"></i> Delete
             </button>
