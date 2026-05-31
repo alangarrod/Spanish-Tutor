@@ -18,6 +18,7 @@ A beautiful, single-page web application for learning Spanish, powered by your l
 | 🎯 **6 Study Levels** | Lower Beginner → Upper Beginner → Lower Intermediate → Upper Intermediate → Lower Advanced → Upper Advanced |
 | 🔊 **Native Speech** | Right-click any Spanish text to hear it spoken in a native accent |
 | 📝 **Markdown Rendering** | Rich, beautifully formatted lessons with headers, lists, bold text and more |
+| ❓ **On-Demand Quizzes** | Generate throw-away multiple-choice quizzes from any lesson to test your understanding — not persisted, just practice |
 | 💾 **Local-First Storage** | Everything lives in your browser via IndexedDB — no cloud required |
 | 🎨 **Pastel UI** | Clean, modern interface built with Tailwind CSS and custom animations |
 | 🔍 **Search & Filter** | Quickly find topics within your current study level |
@@ -202,9 +203,6 @@ Each generated lesson includes the following sections:
 2. **Key Vocabulary** — 8–12 essential Spanish words/phrases
 3. **Grammar & Rules** — Clear explanations with bold Spanish examples
 4. **Example Sentences** — 6–8 practical sentences with translations
-5. **Practice Exercises** — 5 fill-in-the-blank or translation tasks
-6. **Mini Quiz** — 4 multiple-choice questions with answers
-7. **Cultural Note** — An interesting cultural fact
 
 ---
 
@@ -246,6 +244,15 @@ Pastel palette defined in `Spanish-Tutor.html` via Tailwind config:
 - **Text selection** reveals a floating "Play" button
 - **Voice settings** (gear icon in header) let you choose your preferred Spanish voice
 - Automatically detects and prioritises local Spanish voices
+
+## ❓ Quiz Features
+
+Lessons no longer include an embedded quiz — instead, you can generate **optional, on-demand multiple-choice quizzes** for any lesson whenever you want to test yourself:
+
+- Click **Quiz Me** in the lesson toolbar to instantly generate 5 multiple-choice questions based on the current lesson content
+- Quizzes are **throw-away / unpersisted** — they exist only for the session and are not stored in IndexedDB
+- Receive immediate feedback with correct answers, explanations, and a score summary
+- Perfect for quick self-testing before moving on to a new topic
 
 ---
 
