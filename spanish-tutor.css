@@ -128,6 +128,33 @@
     transform: translateY(-1px);
   }
 
+  .lesson-tip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--soft-blue);
+    border: 1px solid var(--pastel-blue);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: var(--dark-gray);
+    font-style: italic;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .lesson-tip:hover {
+    background: #CFEBF6;
+    border-color: var(--hover-blue);
+  }
+  .lesson-tip i {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .lesson-tip strong {
+    font-style: normal;
+    color: var(--deep-blue);
+  }
+
   .audio-status {
     display: inline-flex;
     align-items: center;
