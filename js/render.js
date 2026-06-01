@@ -1,4 +1,12 @@
 // ──────────────────────────── Rendering ────────────────────────────
+function renderSelectionTip() {
+    return `
+        <div class="lesson-tip">
+            <i class="fa-solid fa-volume-high text-deep-blue"></i>
+            <span><strong>Tip:</strong> Select any Spanish text to hear it read aloud — or right-click for more options.</span>
+        </div>`;
+}
+
 function renderTopics() {
     const container = document.getElementById('topicsList');
     const filter = state.searchFilter.toLowerCase();
@@ -155,7 +163,7 @@ function renderLessonArea() {
 
             if (story.content) {
                 const lessonContent = document.getElementById('lessonContent');
-                lessonContent.innerHTML = renderMarkdown(story.content);
+                lessonContent.innerHTML = renderSelectionTip() + renderMarkdown(story.content);
                 if (story.updatedAt) {
                     lessonContent.innerHTML += `
                         <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-medium-gray">
@@ -217,7 +225,7 @@ function renderLessonArea() {
 
     if (lesson) {
         const lessonContent = document.getElementById('lessonContent');
-        lessonContent.innerHTML = renderMarkdown(lesson.content);
+        lessonContent.innerHTML = renderSelectionTip() + renderMarkdown(lesson.content);
         if (lesson.updatedAt) {
             lessonContent.innerHTML += `
                 <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-medium-gray">
