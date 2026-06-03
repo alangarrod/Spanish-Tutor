@@ -14,6 +14,7 @@ A beautiful, single-page web application for learning Spanish, powered by your l
 | 🤖 **AI Lesson Generation** | Creates structured lessons via local Ollama LLMs (streaming response support) |
 | 💡 **AI Topic Suggestions** | Ask Ollama for topic ideas tailored to your current study level — pick and add the ones you like |
 | 💡 **AI Subtopic Suggestions** | Ask Ollama for subtopic ideas under any topic — pick and add the ones you like |
+| 🌱 **Default Curriculum** | On first run, optionally seed ~5 topics × ~3 subtopics per study level as a starting point |
 | 🗂️ **Topic Hierarchy** | Organise content as Topics → Subtopics → Lessons |
 | 🎯 **6 Study Levels** | Lower Beginner → Upper Beginner → Lower Intermediate → Upper Intermediate → Lower Advanced → Upper Advanced |
 | 🔊 **Native Speech** | Right-click any Spanish text to hear it spoken in a native accent |
@@ -108,7 +109,12 @@ erDiagram
 ```mermaid
 flowchart TD
     Start(["👤 User Opens App"]) --> Init["⚙️ Initialise DB & State"]
-    Init --> Render["🖼️ Render Topic Sidebar"]
+    Init --> EmptyCheck{"📋 Any topics<br/>in DB?"}
+    EmptyCheck -->|"Yes"| Render["🖼️ Render Topic Sidebar"]
+    EmptyCheck -->|"No"| SeedPrompt["🌱 Show Seed Prompt"]
+    SeedPrompt -->|"Yes, seed"| SeedCurriculum["📚 Seed Default Curriculum"]
+    SeedPrompt -->|"No, start blank"| Render
+    SeedCurriculum --> Render
     Render --> SelectLevel["📚 Select Study Level"]
     SelectLevel --> SuggestTopic["💡 Suggest Topics (AI)"]
     SuggestTopic --> AddTopic["➕ Add Topic"]
@@ -146,6 +152,7 @@ graph LR
     JS --> ollama["🦙 ollama.js<br/>LLM API client"]
     JS --> modals["🪟 modals.js<br/>Modal dialogs"]
     JS --> speech["🔊 speech.js<br/>TTS & voice settings"]
+    JS --> curriculum["🌱 curriculum.js<br/>Default curriculum data"]
 
     style HTML fill:#AEC6CF,stroke:#333,stroke-width:2px,color:#1a1a1a
     style CSS fill:#D6EAF8,stroke:#333,stroke-width:2px,color:#1a1a1a
@@ -175,6 +182,7 @@ graph LR
    > No build step required — it's pure HTML + JS + CSS!
 
 3. **Start learning!**
+   - On first run, you'll be prompted to seed a default curriculum (~5 topics × ~3 subtopics per study level) — accept for a ready-made starting point, or decline to start from scratch
    - Select your study level from the dropdown
    - Add topics manually, or click **Suggest Topics** in the Add Topic modal to get AI-generated ideas
    - Add subtopics manually, or click **Suggest Subtopics** in the Add Subtopic modal to get AI-generated ideas
