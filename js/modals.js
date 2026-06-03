@@ -14,6 +14,23 @@ function hideModal() {
     document.getElementById('modalOverlay').classList.remove('flex');
 }
 
+function showSeedPrompt() {
+    showModal(`
+        <div class="text-center">
+            <div class="text-4xl mb-3">🇪🇸</div>
+            <h3 class="text-lg font-bold text-dark-gray mb-2">Welcome to Spanish Tutor!</h3>
+            <p class="text-sm text-medium-gray mb-4 leading-relaxed">
+                It looks like you're starting fresh. Would you like to begin with a suggested curriculum?<br>
+                <span class="text-xs">This adds ~5 topics with ~3 subtopics each across all 6 study levels.</span>
+            </p>
+            <div class="flex justify-center gap-3">
+                <button onclick="hideModal()" class="px-4 py-2 rounded-lg text-sm font-medium text-medium-gray hover:bg-gray-100">No, start blank</button>
+                <button onclick="hideModal();seedCurriculum()" class="btn-primary px-5 py-2 rounded-lg text-sm font-bold">Yes, seed curriculum</button>
+            </div>
+        </div>
+    `);
+}
+
 function showAddTopicModal() {
     showModal(`
         <h3 class="text-lg font-bold text-dark-gray mb-4"><i class="fa-solid fa-folder-plus mr-2 text-pastel-blue"></i>Add Topic</h3>
