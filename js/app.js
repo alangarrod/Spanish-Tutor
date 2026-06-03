@@ -1,3 +1,30 @@
+// ──────────────────────────── Curriculum Seeding ────────────────────────────
+async function seedCurriculum() {
+    const originalLevel = state.currentStudyLevel;
+    const levelOrder = STUDY_LEVELS.map(l => l.id);
+
+    for (const levelId of levelOrder) {
+        const topics = CURRICULUM_DATA[levelId];
+        if (!topics) continue;
+
+        state.currentStudyLevel = levelId;
+
+        for (const entry of topics) {
+            const topic = await addTopic(entry.topic);
+            await new Promise(r => setTimeout(r, 5));
+
+            for (const subName of entry.subtopics) {
+                await addSubtopic(topic.id, subName);
+                await new Promise(r => setTimeout(r, 5));
+            }
+        }
+    }
+
+    state.currentStudyLevel = originalLevel;
+    renderTopics();
+    showToast('Curriculum seeded across all study levels!', 'success');
+}
+
 // ──────────────────────────── Init ────────────────────────────
 async function init() {
     try {
@@ -11,6 +38,11 @@ async function init() {
         state.topics.sort((a, b) => a.createdAt - b.createdAt);
         state.subtopics.sort((a, b) => a.createdAt - b.createdAt);
         state.stories.sort((a, b) => a.createdAt - b.createdAt);
+
+        // First-run: prompt to seed curriculum if no topics exist
+        if (state.topics.length === 0) {
+            showSeedPrompt();
+        }
 
         renderTopics();
         renderLessonArea();
