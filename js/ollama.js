@@ -331,7 +331,7 @@ async function generateQuiz(lessonContent) {
     const model = getSelectedModel();
     const levelName = STUDY_LEVELS.find(l => l.id === state.currentStudyLevel)?.name || 'Lower Beginner';
 
-    const prompt = `You are an expert Spanish language tutor. Based on the following lesson, generate exactly 5 multiple-choice quiz questions to test the student's understanding.
+    const prompt = `You are an expert Spanish language tutor. Based on the following lesson, generate exactly 7 multiple-choice quiz questions to test the student's understanding.
 
 Study Level: ${levelName}
 
@@ -351,7 +351,7 @@ Return ONLY valid JSON in this exact format, with no additional text before or a
 }
 
 Rules:
-- Generate exactly 5 questions
+- Generate exactly 7 questions
 - Each question must have exactly 4 options
 - "correct" is the 0-based index of the correct option
 - Mix question types: vocabulary translation, fill-in-the-blank, and grammar rule questions
