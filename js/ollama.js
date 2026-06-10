@@ -222,17 +222,36 @@ ${existingList}Requirements:
     return data.response || '';
 }
 
+function buildStoryCurriculumContext() {
+    const levelTopics = state.topics.filter(t => t.studyLevelId === state.currentStudyLevel);
+    if (levelTopics.length === 0) return '';
+
+    const lines = [];
+    lines.push('The student is currently studying the following topics and subtopics. Try to naturally weave in relevant vocabulary and grammar from these areas, but keep the story fun and coherent:');
+    for (const topic of levelTopics) {
+        const topicSubs = state.subtopics.filter(s => s.topicId === topic.id);
+        if (topicSubs.length > 0) {
+            lines.push(`- ${topic.name}: ${topicSubs.map(s => s.name).join(', ')}`);
+        } else {
+            lines.push(`- ${topic.name}`);
+        }
+    }
+    lines.push('');
+    return lines.join('\n');
+}
+
 // ──────────────── Story Generation ────────────────
 
 async function generateStory(storyTitle) {
     const model = getSelectedModel();
     const levelName = STUDY_LEVELS.find(l => l.id === state.currentStudyLevel)?.name || 'Lower Beginner';
+    const curriculumContext = buildStoryCurriculumContext();
     const prompt = `Eres un experto escritor de historias para estudiantes de español. Genera una historia en español para un estudiante de nivel ${levelName}.
 
 Título de la historia: "${storyTitle}"
 Nivel de estudio: ${levelName}
 
-Escribe una historia de 400-500 palabras enteramente en español, apropiada para un estudiante de nivel ${levelName}. Usa vocabulario y gramática adecuados al nivel. La historia debe ser coherente, interesante y tener un principio, desarrollo y desenlace claros.
+${curriculumContext}Escribe una historia de 400-500 palabras enteramente en español, apropiada para un estudiante de nivel ${levelName}. Usa vocabulario y gramática adecuados al nivel. La historia debe ser coherente, interesante y tener un principio, desarrollo y desenlace claros.
 
 Escribe SOLAMENTE la historia en texto plano. No incluyas secciones adicionales, vocabulario, preguntas, ejercicios ni notas. No uses encabezados markdown ni formato especial — solo la narrativa.
 
@@ -299,10 +318,11 @@ async function generateStoryTitleSuggestions(levelName, existingTitles) {
     const existingList = existingTitles.length > 0
         ? `Existing story titles for this level:\n${existingTitles.map(t => `- ${t}`).join('\n')}\n`
         : '';
+    const curriculumContext = buildStoryCurriculumContext();
 
     const prompt = `You are an expert Spanish language tutor and storyteller. Suggest exactly 5 Spanish story title ideas for a ${levelName} Spanish student.
 
-${existingList}Requirements:
+${existingList}${curriculumContext}Requirements:
 - Each title should be a short, catchy Spanish phrase (2-6 words).
 - Titles should suggest engaging stories that help practice Spanish at the ${levelName} level.
 - Do NOT repeat any title from the existing list above.
