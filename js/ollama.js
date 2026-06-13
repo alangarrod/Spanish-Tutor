@@ -108,6 +108,12 @@ Provide 10-12 example sentences demonstrating the concept across a range of cont
 After the visible lesson content, append a final section with the exact header above. Inside this section provide 8-12 English-Spanish word pairs drawn from the lesson vocabulary. These pairs are hidden from the main lesson view and used only for flashcard practice. Format each pair on its own line as:
 - English word/phrase :: Spanish word/phrase
 
+Rules for flashcard vocabulary:
+- The left side MUST be in English and the right side MUST be in Spanish.
+- Do NOT include pairs where both sides are Spanish, or where the English side is identical to the Spanish side.
+- Every English entry must be a genuine translation or clear equivalent of the Spanish word/phrase.
+- If a Spanish term has no clean English equivalent, omit it rather than duplicate it.
+
 Write all explanations in English with Spanish examples. Be thorough and instructive. Use clear formatting.`;
 
     state.isGenerating = true;
