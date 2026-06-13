@@ -20,7 +20,8 @@ A beautiful, single-page web application for learning Spanish, powered by your l
 | 🔊 **Native Speech** | Right-click any Spanish text to hear it spoken in a native accent |
 | 📝 **Markdown Rendering** | Rich, beautifully formatted lessons with headers, lists, bold text and more |
 | ❓ **On-Demand Quizzes** | Generate throw-away multiple-choice quizzes from any lesson to test your understanding — not persisted, just practice |
-| 💾 **Local-First Storage** | Everything lives in your browser via IndexedDB — no cloud required |
+| �️ **Flash Cards** | Every generated lesson includes a hidden vocabulary list; open the Flash Cards modal to practice English → Spanish recall with flip cards and confidence tracking |
+| �💾 **Local-First Storage** | Everything lives in your browser via IndexedDB — no cloud required |
 | 🎨 **Pastel UI** | Clean, modern interface built with Tailwind CSS and custom animations |
 | 🔍 **Search & Filter** | Quickly find topics within your current study level |
 | ⚙️ **Model Selector** | Choose any installed Ollama model, or enter a custom model tag |
@@ -127,7 +128,9 @@ flowchart TD
     Streaming --> Save["💾 Save to IndexedDB"]
     Save --> Display["📖 Display Formatted Lesson"]
     Display --> Listen["🔊 Listen to Pronunciation"]
+    Display --> Flashcards["🗂️ Practice Flash Cards"]
     Display --> Regenerate["🔄 Regenerate if Needed"]
+    Flashcards --> Regenerate
     Regenerate --> Streaming
     Display --> Copy["📋 Copy Text"]
 ```
@@ -152,6 +155,7 @@ graph LR
     JS --> ollama["🦙 ollama.js<br/>LLM API client"]
     JS --> modals["🪟 modals.js<br/>Modal dialogs"]
     JS --> speech["🔊 speech.js<br/>TTS & voice settings"]
+    JS --> flashcards["🗂️ flashcards.js<br/>Flash card practice"]
     JS --> curriculum["🌱 curriculum.js<br/>Default curriculum data"]
 
     style HTML fill:#AEC6CF,stroke:#333,stroke-width:2px,color:#1a1a1a
@@ -211,6 +215,7 @@ Each generated lesson includes the following sections:
 2. **Key Vocabulary** — 8–12 essential Spanish words/phrases
 3. **Grammar & Rules** — Clear explanations with bold Spanish examples
 4. **Example Sentences** — 6–8 practical sentences with translations
+5. **Flashcard Vocabulary** — A hidden section with English → Spanish pairs used by the Flash Cards feature (not shown in the lesson view)
 
 ---
 
@@ -252,6 +257,21 @@ Pastel palette defined in `Spanish-Tutor.html` via Tailwind config:
 - **Text selection** reveals a floating "Play" button
 - **Voice settings** (gear icon in header) let you choose your preferred Spanish voice
 - Automatically detects and prioritises local Spanish voices
+
+## 🗂️ Flash Card Features
+
+Every generated lesson includes a hidden **Flashcard Vocabulary** section with English → Spanish word pairs. Once a lesson is saved, a **Flash Cards** button appears in the lesson toolbar alongside **Quiz Me**.
+
+- Click the card to flip between English and Spanish
+- Mark a card as **Got It** to remove it from the current session
+- Mark a card as **Still Learning** to send it to the back of the deck for more practice
+- Keyboard shortcuts: **Space/Enter** to flip, **←/→** to navigate, **K** for known, **L** for learning
+- Confidence counters update live as you rate each card
+- When the deck is empty, a completion summary shows how many you knew and how many you marked for review
+
+Flash card sessions are **throw-away / unpersisted** — they exist only for the session and are not stored in IndexedDB.
+
+---
 
 ## ❓ Quiz Features
 

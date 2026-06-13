@@ -58,10 +58,12 @@ async function saveLesson(subtopicId, content, modelName) {
         existing.content = content;
         existing.updatedAt = Date.now();
         existing.modelName = modelName || existing.modelName || null;
+        // Preserve any previously extracted flashcard vocabulary.
+        if (existing.flashcardVocab === undefined) existing.flashcardVocab = null;
         await dbPut('lessons', existing);
         lesson = existing;
     } else {
-        lesson = { id: 'l_' + Date.now(), subtopicId, content, createdAt: Date.now(), updatedAt: Date.now(), modelName: modelName || null };
+        lesson = { id: 'l_' + Date.now(), subtopicId, content, flashcardVocab: null, createdAt: Date.now(), updatedAt: Date.now(), modelName: modelName || null };
         await dbPut('lessons', lesson);
         state.lessons.push(lesson);
     }

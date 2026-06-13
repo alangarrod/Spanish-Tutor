@@ -209,6 +209,8 @@ function renderLessonArea() {
         <i class="fa-solid fa-chevron-right mx-2 text-xs opacity-40"></i>
         <i class="fa-solid fa-book mr-1"></i> ${escapeHtml(subtopic?.name || '')}`;
 
+    const hasFlashcards = lesson && Array.isArray(lesson.flashcardVocab) && lesson.flashcardVocab.length > 0;
+
     contextBar.innerHTML = `
         <button onclick="requestGenerateLesson()" class="btn-primary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
             <i class="fa-solid fa-wand-magic-sparkles"></i> ${lesson ? 'Regenerate Lesson' : 'Generate Lesson'}
@@ -217,6 +219,11 @@ function renderLessonArea() {
             <button onclick="showQuizModal()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
                 <i class="fa-solid fa-circle-question"></i> Quiz Me
             </button>
+            ${hasFlashcards ? `
+                <button onclick="showFlashcardsModal()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group"></i> Flash Cards
+                </button>
+            ` : ''}
             <button onclick="confirmDeleteLesson('${lesson.id}')" class="btn-danger px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
                 <i class="fa-solid fa-trash"></i> Delete
             </button>
