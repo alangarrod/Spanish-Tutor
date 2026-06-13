@@ -23,8 +23,6 @@ function initSpeechSynthesis() {
         speechState.preferredVoice = (savedName && speechState.voices.find(v => v.name === savedName))
             || speechState.spanishVoices[0]
             || null;
-        console.log(`Found ${speechState.spanishVoices.length} Spanish voice(s)`, speechState.spanishVoices.map(v => v.name));
-        console.log('Using voice:', speechState.preferredVoice ? speechState.preferredVoice.name : 'none');
     };
     loadVoices();
     if (window.speechSynthesis.onvoiceschanged !== undefined) {
@@ -192,7 +190,6 @@ function handleVoiceChange() {
         localStorage.removeItem('preferredVoiceName');
         speechState.preferredVoice = speechState.spanishVoices[0] || null;
     }
-    console.log('Preferred voice set to:', speechState.preferredVoice ? speechState.preferredVoice.name : 'auto');
 }
 
 function testVoice() {

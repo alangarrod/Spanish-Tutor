@@ -1,0 +1,22 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Node / package manager (in case one is added later)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build artifacts (in case a build step is added later)
+dist/
+build/
