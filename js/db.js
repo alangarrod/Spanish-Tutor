@@ -1,7 +1,7 @@
 // ──────────────────────────── IndexedDB ────────────────────────────
 function openDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('SpanishTutorDB', 4);
+        const request = indexedDB.open('SpanishTutorDB', 5);
         request.onupgradeneeded = (e) => {
             const database = e.target.result;
             if (!database.objectStoreNames.contains('topics')) {
@@ -27,6 +27,8 @@ function openDB() {
                 const storyStore = database.createObjectStore('stories', { keyPath: 'id' });
                 storyStore.createIndex('studyLevelId', 'studyLevelId', { unique: false });
             }
+            // Existing lessons store may need a flashcardVocab index; recreate not safe,
+            // so we rely on the object store already existing and just bump the version.
         };
         request.onsuccess = async (e) => {
             db = e.target.result;

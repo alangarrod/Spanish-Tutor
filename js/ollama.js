@@ -104,6 +104,10 @@ Explain the grammatical concepts thoroughly. Cover any important rules, exceptio
 Provide 10-12 example sentences demonstrating the concept across a range of contexts. Format each as:
 - **Spanish sentence** (English translation)
 
+## Flashcard Vocabulary (DO NOT SHOW IN LESSON)
+After the visible lesson content, append a final section with the exact header above. Inside this section provide 8-12 English-Spanish word pairs drawn from the lesson vocabulary. These pairs are hidden from the main lesson view and used only for flashcard practice. Format each pair on its own line as:
+- English word/phrase :: Spanish word/phrase
+
 Write all explanations in English with Spanish examples. Be thorough and instructive. Use clear formatting.`;
 
     state.isGenerating = true;
@@ -153,6 +157,7 @@ Write all explanations in English with Spanish examples. Be thorough and instruc
         }
 
         const lesson = await saveLesson(state.selectedSubtopicId, fullContent, model);
+        extractAndStoreFlashcards(lesson);
         showToast('Lesson generated and saved!', 'success');
     } catch (err) {
         showToast(`Error: ${err.message}`, 'error');
