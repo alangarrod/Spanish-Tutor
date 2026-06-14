@@ -29,6 +29,21 @@ A beautiful, single-page web application for learning Spanish, powered by your l
 
 ---
 
+## 📸 Screenshots
+
+> Place screenshots in the [`screenshots/`](./screenshots) folder and update the paths below.
+
+### Main lesson view
+![Main lesson view](screenshots/lesson-view.png)
+
+### Flashcards practice
+![Flashcards](screenshots/flashcards.png)
+
+### Throw away quizzes
+![Quiz](screenshots/quiz.png)
+
+---
+
 ## 🏗️ Architecture
 
 ```mermaid
