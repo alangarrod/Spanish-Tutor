@@ -14,11 +14,14 @@ let state = {
     subtopics: [],
     lessons: [],
     stories: [],
+    chats: [],
     selectedTopicId: null,
     selectedSubtopicId: null,
     selectedStoryId: null,
     isGenerating: false,
     searchFilter: '',
     storiesExpanded: false,
+    chatPanelOpen: false,
+    chatIsSending: false,
     currentStudyLevel: localStorage.getItem('CurrentLevel') || 'lb'
 };

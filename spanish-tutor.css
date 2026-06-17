@@ -334,3 +334,133 @@
   .flashcard-btn-learning:hover {
     background: #fde68a;
   }
+
+  /* ─── Practice Chat Panel ─── */
+  .chat-panel {
+    animation: fadeIn 0.2s ease;
+  }
+
+  .chat-messages {
+    min-height: 0;
+  }
+
+  .chat-bubble {
+    display: flex;
+    gap: 0.6rem;
+    max-width: 100%;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .chat-bubble-user {
+    flex-direction: row-reverse;
+  }
+
+  .chat-avatar {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    color: white;
+  }
+
+  .chat-bubble-user .chat-avatar {
+    background: var(--deep-blue);
+  }
+
+  .chat-bubble-tutor .chat-avatar {
+    background: var(--pastel-blue);
+    color: var(--dark-gray);
+  }
+
+  .chat-bubble-content {
+    max-width: 80%;
+    position: relative;
+  }
+
+  .chat-bubble-user .chat-bubble-content {
+    background: var(--pastel-blue);
+    color: var(--dark-gray);
+    border-radius: 1rem 1rem 0.25rem 1rem;
+  }
+
+  .chat-bubble-tutor .chat-bubble-content {
+    background: white;
+    border: 1px solid #e6eef3;
+    color: var(--dark-gray);
+    border-radius: 1rem 1rem 1rem 0.25rem;
+  }
+
+  .chat-bubble-text {
+    padding: 0.6rem 0.85rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Tutor bubbles render markdown; keep their inline elements tidy. */
+  .chat-bubble-text p { margin: 0.3rem 0; }
+  .chat-bubble-text p:first-child { margin-top: 0; }
+  .chat-bubble-text p:last-child { margin-bottom: 0; }
+  .chat-bubble-text strong { font-weight: 700; }
+  .chat-bubble-text em { font-style: italic; }
+
+  .chat-speak-btn {
+    position: absolute;
+    bottom: -1.25rem;
+    right: 0.25rem;
+    background: var(--soft-blue);
+    border: none;
+    color: var(--deep-blue);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.7rem;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+  }
+
+  .chat-bubble-tutor:hover .chat-speak-btn {
+    opacity: 1;
+  }
+
+  .chat-speak-btn:hover {
+    background: var(--pastel-blue);
+  }
+
+  .chat-typing {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    padding: 0.85rem 0.95rem;
+  }
+
+  .chat-typing span {
+    width: 6px;
+    height: 6px;
+    background: var(--medium-gray);
+    border-radius: 50%;
+    animation: chatTyping 1.2s ease-in-out infinite;
+  }
+
+  .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+  .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes chatTyping {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  .chat-input {
+    min-height: 2.5rem;
+    max-height: 7.5rem;
+    font-family: inherit;
+  }

@@ -33,11 +33,13 @@ async function init() {
         state.subtopics = await dbGetAll('subtopics');
         state.lessons = await dbGetAll('lessons');
         state.stories = await dbGetAll('stories');
+        state.chats = await dbGetAll('chats');
 
         // Sort by creation time
         state.topics.sort((a, b) => a.createdAt - b.createdAt);
         state.subtopics.sort((a, b) => a.createdAt - b.createdAt);
         state.stories.sort((a, b) => a.createdAt - b.createdAt);
+        state.chats.sort((a, b) => a.createdAt - b.createdAt);
 
         // First-run: prompt to seed curriculum if no topics exist
         if (state.topics.length === 0) {

@@ -42,6 +42,7 @@ async function deleteSubtopic(subtopicId) {
         await dbDelete('lessons', lesson.id);
     }
     await dbDelete('subtopics', subtopicId);
+    await deleteChatForSubtopic(subtopicId);
     state.subtopics = state.subtopics.filter(s => s.id !== subtopicId);
     state.lessons = state.lessons.filter(l => l.subtopicId !== subtopicId);
     if (state.selectedSubtopicId === subtopicId) {
@@ -105,4 +106,54 @@ async function saveStory(storyId, content, modelName) {
     story.modelName = modelName || story.modelName || null;
     await dbPut('stories', story);
     return story;
+}
+
+// ──────────────── Chat Operations ────────────────
+
+/**
+ * Get (or lazily create) the chat record for the currently selected subtopic.
+ * Each subtopic has at most one persisted conversation.
+ */
+async function getOrCreateChat(subtopicId) {
+    let chat = state.chats.find(c => c.subtopicId === subtopicId);
+    if (chat) return chat;
+
+    const subtopic = state.subtopics.find(s => s.id === subtopicId);
+    const topic = state.topics.find(t => t.id === subtopic?.topicId);
+    chat = {
+        id: 'ch_' + Date.now(),
+        subtopicId,
+        topicName: topic?.name || '',
+        subtopicName: subtopic?.name || '',
+        studyLevelId: state.currentStudyLevel,
+        messages: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+    };
+    await dbPut('chats', chat);
+    state.chats.push(chat);
+    return chat;
+}
+
+/**
+ * Persist the current chat record (messages + timestamp) to IndexedDB and
+ * keep the in-memory state in sync.
+ */
+async function saveChat(chat) {
+    chat.updatedAt = Date.now();
+    await dbPut('chats', chat);
+}
+
+async function deleteChat(subtopicId) {
+    const chat = state.chats.find(c => c.subtopicId === subtopicId);
+    if (!chat) return;
+    await dbDelete('chats', chat.id);
+    state.chats = state.chats.filter(c => c.subtopicId !== subtopicId);
+}
+
+/**
+ * When a subtopic is deleted, also remove its associated chat conversation.
+ */
+async function deleteChatForSubtopic(subtopicId) {
+    await deleteChat(subtopicId);
 }
