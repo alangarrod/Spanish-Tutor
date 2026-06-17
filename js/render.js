@@ -18,6 +18,24 @@ function renderTopics() {
 
     let html = '';
 
+    // Review due banner
+    const dueCount = getDueCardCount();
+    if (dueCount > 0) {
+        html += `
+            <div class="mb-3 p-3 rounded-xl bg-soft-blue border border-pastel-blue/40 flex items-center justify-between animate-fade-in">
+                <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-8 h-8 rounded-full bg-pastel-blue text-white flex items-center justify-center text-sm font-bold flex-shrink-0">${dueCount}</div>
+                    <div class="min-w-0">
+                        <div class="text-sm font-bold text-dark-gray truncate">Review Due</div>
+                        <div class="text-xs text-medium-gray truncate">${dueCount} card${dueCount === 1 ? '' : 's'} ready to practice</div>
+                    </div>
+                </div>
+                <button onclick="showCramDueCardsModal()" class="btn-primary px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 flex-shrink-0">
+                    <i class="fa-solid fa-layer-group"></i> Cram
+                </button>
+            </div>`;
+    }
+
     // Topics section
     if (filteredTopics.length === 0) {
         const levelTopics = state.topics.filter(t => t.studyLevelId === state.currentStudyLevel);

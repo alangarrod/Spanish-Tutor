@@ -41,6 +41,9 @@ async function init() {
         state.stories.sort((a, b) => a.createdAt - b.createdAt);
         state.chats.sort((a, b) => a.createdAt - b.createdAt);
 
+        // Upgrade legacy flashcards to include SM-2 scheduling fields.
+        await migrateAllFlashcards();
+
         // First-run: prompt to seed curriculum if no topics exist
         if (state.topics.length === 0) {
             showSeedPrompt();
