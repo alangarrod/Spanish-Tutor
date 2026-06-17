@@ -115,6 +115,8 @@ tailwind.config = {
                 <div id="contextActions" class="flex items-center gap-2"></div>
             </div>
 
+            <!-- Lesson + Chat split -->
+            <div class="flex flex-1 overflow-hidden">
             <!-- Lesson Area -->
             <div id="lessonArea" class="flex-1 overflow-y-auto scrollbar-thin p-6">
                 <!-- Welcome / Empty State -->
@@ -147,6 +149,10 @@ tailwind.config = {
                     <div id="streamPreview" class="mt-4 w-full max-w-2xl text-left text-sm text-medium-gray bg-white rounded-xl p-6 border border-gray-100 max-h-60 overflow-y-auto scrollbar-thin whitespace-pre-wrap font-mono leading-relaxed"></div>
                 </div>
             </div>
+
+            <!-- Practice Chat Panel (slide-over, hidden by default) -->
+            <aside id="chatPanel" class="chat-panel hidden w-96 flex-shrink-0 bg-white border-l border-pastel-blue/30 flex flex-col shadow-sm"></aside>
+            </div>
         </main>
     </div>
 
@@ -171,6 +177,7 @@ tailwind.config = {
     <script src="js/modals.js"></script>
     <script src="js/flashcards.js"></script>
     <script src="js/speech.js"></script>
+    <script src="js/chat.js"></script>
     <script src="js/curriculum.js"></script>
     <script src="js/app.js"></script>
     <!-- Custom Context Menu -->

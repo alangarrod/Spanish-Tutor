@@ -224,6 +224,9 @@ function renderLessonArea() {
                     <i class="fa-solid fa-layer-group"></i> Flash Cards
                 </button>
             ` : ''}
+            <button onclick="toggleChatPanel()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${state.chatPanelOpen ? 'ring-2 ring-pastel-blue' : ''}" title="Practice conversation with the tutor">
+                <i class="fa-solid fa-comments"></i> Practice
+            </button>
             <button onclick="confirmDeleteLesson('${lesson.id}')" class="btn-danger px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
                 <i class="fa-solid fa-trash"></i> Delete
             </button>
@@ -266,6 +269,9 @@ function handleStudyLevelChange(levelId) {
     state.selectedTopicId = null;
     state.selectedSubtopicId = null;
     state.selectedStoryId = null;
+    state.chatPanelOpen = false;
+    _activeChat = null;
+    renderChatPanel();
     renderTopics();
     renderLessonArea();
 }
@@ -281,6 +287,11 @@ function selectTopic(topicId) {
 function selectSubtopic(subtopicId) {
     state.selectedSubtopicId = subtopicId;
     state.selectedStoryId = null;
+    // If the practice panel is open, rebind it to the newly selected subtopic.
+    if (state.chatPanelOpen) {
+        _activeChat = null;
+        openChatPanel();
+    }
     renderTopics();
     renderLessonArea();
 }
@@ -296,4 +307,17 @@ function selectStory(storyId) {
 function toggleStoriesSection() {
     state.storiesExpanded = !state.storiesExpanded;
     renderTopics();
+}
+
+/**
+ * Toggle the conversational practice panel. Only available when a subtopic
+ * with a generated lesson is selected. When closing, drop the active chat
+ * handle so a fresh one is resolved next time.
+ */
+async function toggleChatPanel() {
+    if (state.chatPanelOpen) {
+        closeChatPanel();
+    } else {
+        await openChatPanel();
+    }
 }
