@@ -25,21 +25,22 @@ Loading order:
 4. `js/toast.js`, `js/markdown.js`
 5. `js/render.js` — DOM rendering (depends on `state`)
 6. `js/data.js` — CRUD (depends on `state`, `db.js`)
-7. `js/ollama.js`, `js/modals.js`, `js/flashcards.js`, `js/speech.js`, `js/curriculum.js`
+7. `js/ollama.js`, `js/modals.js`, `js/flashcards.js`, `js/speech.js`, `js/chat.js`, `js/curriculum.js`
 8. `js/app.js` — entry point, calls `init()`
 
 ### State as Single Source of Truth
 
 The `state` object (in `js/state.js`) holds all in-memory data:
-- `topics`, `subtopics`, `lessons`, `stories`
+- `topics`, `subtopics`, `lessons`, `stories`, `chats`
 - `selectedTopicId`, `selectedSubtopicId`, `selectedStoryId`
+- `chatPanelOpen`, `chatIsSending`
 - `currentStudyLevel` (persisted to `localStorage` as `CurrentLevel`)
 
 **Pattern:** mutate `state`, then call the relevant `render*` function (e.g., `renderTopics()`, `renderLessonArea()`). Never manipulate DOM data directly.
 
-### IndexedDB (`SpanishTutorDB`, version 5)
+### IndexedDB (`SpanishTutorDB`, version 6)
 
-Promise-based wrappers in `js/db.js`: `dbGetAll`, `dbPut`, `dbDelete`, `dbGetByIndex`. Stores: `topics`, `subtopics`, `lessons`, `studyLevels`, `stories`. Do not access `indexedDB` directly outside `db.js`.
+Promise-based wrappers in `js/db.js`: `dbGetAll`, `dbPut`, `dbDelete`, `dbGetByIndex`. Stores: `topics`, `subtopics`, `lessons`, `studyLevels`, `stories`, `chats`. Do not access `indexedDB` directly outside `js/db.js`.
 
 ### Tailwind CSS (CDN)
 
@@ -70,8 +71,23 @@ STUDY_LEVEL (lb | ub | li | ui | la | ua)
   └── TOPIC          { id: "t_{timestamp}", name, studyLevelId, createdAt }
         └── SUBTOPIC { id: "s_{timestamp}", topicId, name, createdAt }
               └── LESSON { id: "l_{timestamp}", subtopicId, content, flashcardVocab, createdAt, updatedAt }
+                    └── CHAT { id: "ch_{timestamp}", subtopicId, topicName, subtopicName, studyLevelId, messages, createdAt, updatedAt }
   └── STORY          { id: "st_{timestamp}", studyLevelId, title, content, createdAt, updatedAt }
 ```
+
+### Flashcard scheduling
+
+Each entry in `lesson.flashcardVocab` is a spaced-repetition card with SM-2 fields:
+`{ front, back, ease, interval, dueAt, reps, lapses, lastReviewed }`.
+- New cards are immediately due (`dueAt: 0`).
+- "Got It" advances the interval using the easiness factor.
+- "Still Learning" resets the interval to 1 day and lowers `ease` (minimum 1.3).
+- `getDueCardCount()` / `getAllDueCards()` aggregate due cards across all lessons.
+- `showFlashcardsModal()` only shows due cards for the current lesson; `showCramDueCardsModal()` mixes due cards from every lesson.
+
+### Chat messages
+
+Each `chat.messages` entry is `{ role: 'user' | 'assistant', content: string }`. The tutor is called via Ollama's streaming `/api/chat` endpoint with the full message history plus a system prompt scoped to the current subtopic/lesson.
 
 ## Coding Conventions
 
