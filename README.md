@@ -21,7 +21,8 @@ A beautiful, single-page web application for learning Spanish, powered by your l
 | 📝 **Markdown Rendering** | Rich, beautifully formatted lessons with headers, lists, bold text and more |
 | ❓ **On-Demand Quizzes** | Generate throw-away multiple-choice quizzes from any lesson to test your understanding — not persisted, just practice |
 | �️ **Flash Cards** | Every generated lesson includes a hidden vocabulary list; open the Flash Cards modal to practice English → Spanish recall with flip cards and confidence tracking |
-| �💾 **Local-First Storage** | Everything lives in your browser via IndexedDB — no cloud required |
+| 💾 **Local-First Storage** | Everything lives in your browser via IndexedDB — no cloud required |
+| 💿 **Backup &amp; Restore** | One-click export/import of all topics, lessons, stories, and chats as a JSON file — protect against data loss or share your progress |
 | 🎨 **Pastel UI** | Clean, modern interface built with Tailwind CSS and custom animations |
 | 🔍 **Search & Filter** | Quickly find topics within your current study level |
 | ⚙️ **Model Selector** | Choose any installed Ollama model, or enter a custom model tag |
@@ -172,6 +173,7 @@ graph LR
     JS --> speech["🔊 speech.js<br/>TTS & voice settings"]
     JS --> flashcards["🗂️ flashcards.js<br/>Flash card practice"]
     JS --> curriculum["🌱 curriculum.js<br/>Default curriculum data"]
+    JS --> backup["💿 backup.js<br/>Export / Import JSON"]
 
     style HTML fill:#AEC6CF,stroke:#333,stroke-width:2px,color:#1a1a1a
     style CSS fill:#D6EAF8,stroke:#333,stroke-width:2px,color:#1a1a1a
@@ -299,7 +301,20 @@ Lessons no longer include an embedded quiz — instead, you can generate **optio
 
 ---
 
-## 📸 Screenshots
+## � Backup &amp; Restore
+
+Since all data lives in your browser's local IndexedDB with no server, the **Backup &amp; Restore** feature (database icon in the header) lets you safeguard your progress and move it between browsers or machines.
+
+- **Export Backup** — downloads a single timestamped JSON file containing all your topics, subtopics, lessons, stories, and chats
+- **Import Backup** — restores from a previously exported JSON file; existing records with the same ID are overwritten, and records not in the backup are preserved
+- A confirmation modal shows the record counts before importing, so you know exactly what's being restored
+- Study levels are excluded from backups — they're seeded automatically on first run
+
+> 💡 Tip: Export a backup periodically or before making bulk changes, just in case.
+
+---
+
+## �📸 Screenshots
 
 > *(Recommended: Add screenshots of the main UI, a generated lesson, and the voice settings modal)*
 

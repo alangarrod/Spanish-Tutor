@@ -25,7 +25,7 @@ Loading order:
 4. `js/toast.js`, `js/markdown.js`
 5. `js/render.js` — DOM rendering (depends on `state`)
 6. `js/data.js` — CRUD (depends on `state`, `db.js`)
-7. `js/ollama.js`, `js/modals.js`, `js/flashcards.js`, `js/speech.js`, `js/chat.js`, `js/curriculum.js`
+7. `js/ollama.js`, `js/modals.js`, `js/flashcards.js`, `js/speech.js`, `js/chat.js`, `js/curriculum.js`, `js/backup.js`
 8. `js/app.js` — entry point, calls `init()`
 
 ### State as Single Source of Truth
