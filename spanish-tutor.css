@@ -344,6 +344,33 @@
     min-height: 0;
   }
 
+  /* Starter-phrase chips shown in the empty chat state. */
+  .chat-starter-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left;
+    background: white;
+    border: 1px solid #e6eef3;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    color: var(--dark-gray);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .chat-starter-chip i {
+    color: var(--deep-blue);
+    flex-shrink: 0;
+  }
+
+  .chat-starter-chip:hover {
+    background: var(--soft-blue);
+    border-color: var(--pastel-blue);
+  }
+
   .chat-bubble {
     display: flex;
     gap: 0.6rem;

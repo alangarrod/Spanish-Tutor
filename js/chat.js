@@ -7,6 +7,17 @@
 let _activeChat = null;
 
 /**
+ * Clickable starter phrases shown in the empty chat state. Learners often
+ * freeze at a blank input in a foreign language — these get them going.
+ */
+const CHAT_STARTER_PHRASES = [
+    '¡Hola! Me gustaría practicar español.',
+    '¿Podemos practicar este tema juntos?',
+    '¿Cómo digo esto en español?',
+    'Explícame eso de otra forma, por favor.'
+];
+
+/**
  * Open the practice chat panel for the currently selected subtopic.
  * Lazily creates a persisted chat record on first use.
  */
@@ -112,6 +123,17 @@ function _renderChatMessages() {
                 </div>
                 <p class="text-sm font-medium text-dark-gray mb-1">¡Vamos a practicar!</p>
                 <p class="text-xs text-medium-gray max-w-xs leading-relaxed">Start a conversation in Spanish about this subtopic. The tutor replies at your level and corrects mistakes.</p>
+                <div class="flex flex-col items-stretch gap-2 mt-4 w-full max-w-xs">
+                    <p class="text-xs font-medium text-medium-gray self-start"><i class="fa-solid fa-lightbulb mr-1"></i>Try saying:</p>
+                    ${CHAT_STARTER_PHRASES.map(phrase => `
+                        <button type="button" onclick="fillChatSuggestion(this.dataset.phrase)"
+                                data-phrase="${escapeAttr(phrase)}"
+                                class="chat-starter-chip">
+                            <i class="fa-solid fa-comment-dots"></i>
+                            <span>${escapeHtml(phrase)}</span>
+                        </button>
+                    `).join('')}
+                </div>
             </div>`;
     }
 
@@ -171,6 +193,19 @@ function speakChatMessage(index) {
 function autoGrowChatInput(el) {
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+/**
+ * Prefill the composer with a starter phrase and focus it, ready to send or edit.
+ */
+function fillChatSuggestion(phrase) {
+    const input = document.getElementById('chatInput');
+    if (!input) return;
+    input.value = phrase;
+    input.focus();
+    autoGrowChatInput(input);
+    // Place the caret at the end so the learner can tweak the phrase.
+    input.setSelectionRange(input.value.length, input.value.length);
 }
 
 function scrollChatToBottom() {
