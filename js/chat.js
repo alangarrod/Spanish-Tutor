@@ -18,6 +18,18 @@ const CHAT_STARTER_PHRASES = [
 ];
 
 /**
+ * Spanish characters a physical US/UK keyboard can't type natively.
+ * The composer's accent keypad inserts these at the caret.
+ */
+const SPANISH_ACCENT_CHARS = [
+    'á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ', '¿', '¡',
+    'Á', 'É', 'Í', 'Ó', 'Ú', 'Ü', 'Ñ'
+];
+
+// Accent keypad visibility — survives panel re-renders and browser sessions.
+let _accentKeypadOpen = localStorage.getItem('chatAccentKeypadOpen') !== 'false';
+
+/**
  * Open the practice chat panel for the currently selected subtopic.
  * Lazily creates a persisted chat record on first use.
  */
@@ -98,6 +110,17 @@ function renderChatPanel() {
                         <i class="fa-solid fa-paper-plane"></i>
                         <span class="hidden sm:inline">Send</span>
                     </button>
+                    <button id="chatAccentToggle" onclick="toggleAccentKeypad()" class="w-9 h-9 rounded-xl flex items-center justify-center border ${_accentKeypadOpen ? 'border-pastel-blue bg-soft-blue text-deep-blue' : 'border-gray-200 text-medium-gray hover:bg-light-gray'} flex-shrink-0"
+                        title="Toggle Spanish accents keypad" aria-pressed="${_accentKeypadOpen}">
+                        <i class="fa-solid fa-keyboard"></i>
+                    </button>
+                </div>
+                <div id="accentKeypad" class="accent-keypad ${_accentKeypadOpen ? '' : 'hidden'}">
+                    ${SPANISH_ACCENT_CHARS.map(ch => `
+                        <button type="button" onclick="insertAccentChar(this.dataset.char)"
+                                data-char="${escapeAttr(ch)}"
+                                class="accent-key" title="Insert ${escapeHtml(ch)}">${escapeHtml(ch)}</button>
+                    `).join('')}
                 </div>
                 <p class="text-xs text-medium-gray mt-2 px-1">
                     <i class="fa-solid fa-circle-info mr-1"></i>Reply in Spanish — the tutor will gently correct mistakes. Press Enter to send, Shift+Enter for a new line.
@@ -206,6 +229,39 @@ function fillChatSuggestion(phrase) {
     autoGrowChatInput(input);
     // Place the caret at the end so the learner can tweak the phrase.
     input.setSelectionRange(input.value.length, input.value.length);
+}
+
+/**
+ * Insert a Spanish accented character at the caret in the chat input.
+ * Keeps focus on the textarea so physical typing can continue seamlessly.
+ */
+function insertAccentChar(ch) {
+    const input = document.getElementById('chatInput');
+    if (!input) return;
+
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
+
+    input.setRangeText(ch, start, end, 'end');
+    input.dispatchEvent(new Event('input', { bubbles: false }));
+    input.focus();
+}
+
+/**
+ * Show/hide the accent keypad. Persisted so the choice survives re-renders
+ * and page reloads.
+ */
+function toggleAccentKeypad() {
+    _accentKeypadOpen = !_accentKeypadOpen;
+    localStorage.setItem('chatAccentKeypadOpen', _accentKeypadOpen ? 'true' : 'false');
+    renderChatPanel();
+    // Re-render rebuilds the composer; put focus back where the user was.
+    const input = document.getElementById('chatInput');
+    if (input) {
+        input.focus();
+        const pos = input.value.length;
+        input.setSelectionRange(pos, pos);
+    }
 }
 
 function scrollChatToBottom() {
